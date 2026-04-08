@@ -1,0 +1,22 @@
+.thumbnailButton {
+  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+}
+
+.thumbnailButton:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 0 1px rgba(129, 140, 248, 0.22), 0 20px 50px -12px rgba(0, 0, 0, 0.55);
+}
+
+.lightboxImageWrap {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.lightboxImage {
+  transition: transform 350ms ease;
+}
+
+.lightboxImageWrap:hover .lightboxImage {
+  transform: scale(1.02);
+}
+
