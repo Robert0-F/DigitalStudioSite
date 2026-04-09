@@ -20,12 +20,12 @@
 Создайте файл `.env.local` в корне проекта (рядом с `package.json`):
 
 ```env
-ADMIN_PASSWORD=your-strong-password
-NEXT_PUBLIC_DJANGO_URL=https://your-domain.com
-DJANGO_SECRET_KEY=change-me
+ADMIN_PASSWORD=Robert123!
+NEXT_PUBLIC_DJANGO_URL=https://tagirovweb.ru
+DJANGO_SECRET_KEY=roberttagirov123robert
 DJANGO_DEBUG=false
-DJANGO_ALLOWED_HOSTS=your-domain.com,www.your-domain.com
-DJANGO_CORS_ORIGIN=https://your-domain.com
+DJANGO_ALLOWED_HOSTS=tagirovweb.ru,www.tagirovweb.ru
+DJANGO_CORS_ORIGIN=https://tagirovweb.ru
 
 # Optional: email notifications
 RESEND_API_KEY=
@@ -128,7 +128,7 @@ sudo systemctl status digitalstudio-next
 ```nginx
 server {
     listen 80;
-    server_name your-domain.com www.your-domain.com;
+    server_name tagirovweb.ru www.tagirovweb.ru;
 
     client_max_body_size 20M;
 
@@ -169,7 +169,7 @@ sudo systemctl reload nginx
 ```bash
 sudo apt update
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.com -d www.your-domain.com
+sudo certbot --nginx -d tagirovweb.ru -d www.tagirovweb.ru
 ```
 
 ## 8) Восстановление вашего бэкапа БД
