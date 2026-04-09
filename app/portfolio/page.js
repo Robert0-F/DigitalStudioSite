@@ -5,10 +5,14 @@ import Link from "next/link";
 
 async function fetchPublishedProjects() {
   const base = process.env.NEXT_PUBLIC_DJANGO_URL || "http://localhost:8000";
-  const res = await fetch(`${base}/api/portfolio`, { cache: "no-store" });
-  if (!res.ok) return [];
-  const json = await res.json().catch(() => null);
-  return json?.projects ?? [];
+  try {
+    const res = await fetch(`${base}/api/portfolio`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const json = await res.json().catch(() => null);
+    return json?.projects ?? [];
+  } catch {
+    return [];
+  }
 }
 
 export default async function PortfolioPage() {

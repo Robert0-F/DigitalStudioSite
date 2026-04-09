@@ -38,7 +38,7 @@ RESEND_FROM_EMAIL=
 ### 4.1 Клонирование и установка зависимостей
 
 ```bash
-git clone <your-repo-url> /var/www/digitalstudio
+git clone https://github.com/Robert0-F/DigitalStudioSite.git /var/www/digitalstudio
 cd /var/www/digitalstudio
 npm install
 cd backend

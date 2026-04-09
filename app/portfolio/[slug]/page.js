@@ -11,17 +11,26 @@ function getBaseUrl() {
 }
 
 async function fetchPublishedPortfolio() {
-  const res = await fetch(`${getBaseUrl()}/api/portfolio`, { cache: "no-store" });
-  if (!res.ok) return [];
-  const json = await res.json().catch(() => null);
-  return json?.projects ?? [];
+  try {
+    const res = await fetch(`${getBaseUrl()}/api/portfolio`, { cache: "no-store" });
+    if (!res.ok) return [];
+    const json = await res.json().catch(() => null);
+    return json?.projects ?? [];
+  } catch {
+    // Important for CI/build servers: don't fail build when API is temporarily unavailable.
+    return [];
+  }
 }
 
 async function fetchPortfolioDetail(slug) {
-  const res = await fetch(`${getBaseUrl()}/api/portfolio/${slug}`, { cache: "no-store" });
-  if (!res.ok) return null;
-  const json = await res.json().catch(() => null);
-  return json?.project ?? null;
+  try {
+    const res = await fetch(`${getBaseUrl()}/api/portfolio/${slug}`, { cache: "no-store" });
+    if (!res.ok) return null;
+    const json = await res.json().catch(() => null);
+    return json?.project ?? null;
+  } catch {
+    return null;
+  }
 }
 
 export async function generateStaticParams() {
