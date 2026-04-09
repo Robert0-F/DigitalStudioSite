@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Send } from "lucide-react";
 import Button from "./ui/Button";
 import SiteLogo from "./SiteLogo";
 import LeadModal from "./LeadModal";
@@ -158,7 +158,23 @@ export default function Header() {
           )}
         </nav>
 
-        <div className="hidden md:block">
+        <div className="hidden md:flex items-center gap-3">
+          <a
+            href="tel:+79173990611"
+            className="text-sm font-medium text-white/90 transition-colors hover:text-white"
+          >
+            +7 (917) 399-06-11
+          </a>
+          <a
+            href="https://t.me/robertprog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/[0.02] text-[#9ca3af] transition-all hover:border-[#6366f1]/30 hover:text-[#a5b4fc]"
+            aria-label="Telegram"
+            title="Telegram @robertprog"
+          >
+            <Send className="h-4 w-4" />
+          </a>
           <Button onClick={openLeadModal}>Начать проект</Button>
         </div>
 

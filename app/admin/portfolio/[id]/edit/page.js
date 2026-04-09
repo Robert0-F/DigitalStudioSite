@@ -54,6 +54,7 @@ export default function AdminPortfolioEditPage() {
       if (values.client_industry) fd.append("client_industry", values.client_industry);
       if (values.project_type) fd.append("project_type", values.project_type);
       if (values.live_url) fd.append("live_url", values.live_url);
+      fd.append("home_filter", values.home_filter || "");
 
       fd.append("published", values.published ? "true" : "false");
       for (const s of values.service_pages || []) {

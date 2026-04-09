@@ -94,6 +94,9 @@ class PortfolioProject(models.Model):
     # Привязка кейса к страницам услуг (опционально).
     # Пример: ["web", "crm"]. Если пусто — кейс показываем только в общем портфолио.
     service_pages = models.JSONField(default=list, blank=True)
+    # Отдельный фильтр для блока кейсов на главной: web / crm / ui-ux / brand.
+    # Пусто = кейс не участвует в фильтрах главной.
+    home_filter = models.CharField(max_length=20, blank=True, default="")
 
     published = models.BooleanField(default=False)
 

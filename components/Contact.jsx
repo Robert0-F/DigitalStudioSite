@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { motion } from "framer-motion";
 import { useInView } from "framer-motion";
 import { useRef } from "react";
-import { Mail, Phone, Loader2, CheckCircle2 } from "lucide-react";
+import { Mail, Phone, Send, Loader2, CheckCircle2 } from "lucide-react";
 import Button from "./ui/Button";
 import { fadeInUp, staggerContainer } from "@/lib/motion";
 
@@ -84,7 +84,7 @@ export default function Contact() {
             </motion.p>
             <motion.div variants={fadeInUp} className="space-y-4">
               <a
-                href="mailto:hello@tagirov.studio"
+                href="mailto:robrttagirov@gmail.com"
                 className="flex items-center gap-3 text-white hover:text-[var(--accent-hover)] transition-colors group"
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl glass border border-white/10 group-hover:border-[var(--accent)]/30">
@@ -94,11 +94,11 @@ export default function Contact() {
                   <span className="block text-xs text-[var(--text-muted)] uppercase tracking-wider">
                     Email
                   </span>
-                  hello@tagirov.studio
+                  robrttagirov@gmail.com
                 </span>
               </a>
               <a
-                href="tel:+15551234567"
+                href="tel:+79173990611"
                 className="flex items-center gap-3 text-white hover:text-[var(--accent-hover)] transition-colors group"
               >
                 <span className="flex h-11 w-11 items-center justify-center rounded-xl glass border border-white/10 group-hover:border-[var(--accent)]/30">
@@ -108,7 +108,23 @@ export default function Contact() {
                   <span className="block text-xs text-[var(--text-muted)] uppercase tracking-wider">
                     Телефон
                   </span>
-                  +1 (555) 123-4567
+                  +7 (917) 399-06-11
+                </span>
+              </a>
+              <a
+                href="https://t.me/robertprog"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 text-white hover:text-[var(--accent-hover)] transition-colors group"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl glass border border-white/10 group-hover:border-[var(--accent)]/30">
+                  <Send className="h-5 w-5 text-[var(--accent)]" aria-hidden />
+                </span>
+                <span>
+                  <span className="block text-xs text-[var(--text-muted)] uppercase tracking-wider">
+                    Telegram
+                  </span>
+                  @robertprog
                 </span>
               </a>
             </motion.div>

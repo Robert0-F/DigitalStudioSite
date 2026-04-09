@@ -251,6 +251,7 @@ class AdminPortfolioListView(APIView):
                     service_pages = [str(x).strip() for x in raw if str(x).strip()]
                 else:
                     service_pages = [s.strip() for s in str(raw or "").split(",") if s.strip()]
+            home_filter = str(data.get("home_filter") or "").strip()
 
             overview = str(data.get("overview") or "").strip()
             problem = str(data.get("problem") or "").strip()
@@ -286,6 +287,7 @@ class AdminPortfolioListView(APIView):
                 client_industry=client_industry,
                 project_type=project_type,
                 service_pages=service_pages,
+                home_filter=home_filter,
                 live_url=live_url,
                 hero_image_url=hero_image_url,
                 overview=overview,
@@ -366,6 +368,8 @@ class AdminPortfolioUpdateView(APIView):
                 project.service_pages = [str(x).strip() for x in raw if str(x).strip()]
             else:
                 project.service_pages = [s.strip() for s in str(raw or "").split(",") if s.strip()]
+        if data.get("home_filter") is not None:
+            project.home_filter = str(data.get("home_filter") or "").strip()
 
         project.overview = str(data.get("overview") or data.get("description") or project.overview or "").strip()
         project.problem = str(data.get("problem") or project.problem or "").strip()

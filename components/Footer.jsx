@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Linkedin, Dribbble, Github } from "lucide-react";
+import { Linkedin, Dribbble, Github, Mail, Phone, Send } from "lucide-react";
 import SiteLogo from "./SiteLogo";
 
 const nav = [
@@ -76,6 +76,31 @@ export default function Footer() {
               </a>
             ))}
           </div>
+        </div>
+        <div className="mt-10 grid gap-3 rounded-2xl border border-white/10 bg-white/[0.02] p-5 text-sm text-[#d4d4d8] sm:grid-cols-3">
+          <a
+            href="tel:+79173990611"
+            className="flex items-center gap-2 transition-colors hover:text-white"
+          >
+            <Phone className="h-4 w-4 text-[#a5b4fc]" />
+            +7 (917) 399-06-11
+          </a>
+          <a
+            href="mailto:robrttagirov@gmail.com"
+            className="flex items-center gap-2 transition-colors hover:text-white"
+          >
+            <Mail className="h-4 w-4 text-[#a5b4fc]" />
+            robrttagirov@gmail.com
+          </a>
+          <a
+            href="https://t.me/robertprog"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 transition-colors hover:text-white"
+          >
+            <Send className="h-4 w-4 text-[#a5b4fc]" />
+            @robertprog
+          </a>
         </div>
         <div className="mt-14 flex flex-col items-center justify-between gap-4 border-t border-white/[0.06] pt-8 text-sm text-[#71717a] sm:flex-row">
           <p>© Tagirov Digital Studio 2026. Все права защищены.</p>

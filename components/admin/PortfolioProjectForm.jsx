@@ -20,6 +20,13 @@ const servicePageOptions = [
   { value: "ui-ux", label: "UI/UX дизайн" },
   { value: "brand", label: "Бренд и айдентика" },
 ];
+const homeFilterOptions = [
+  { value: "", label: "Не показывать в фильтрах главной" },
+  { value: "web", label: "Web и платформы" },
+  { value: "crm", label: "CRM автоматизация" },
+  { value: "ui-ux", label: "UX UI Design" },
+  { value: "brand", label: "Бренд идентика" },
+];
 
 export default function PortfolioProjectForm({
   initialValues,
@@ -42,6 +49,7 @@ export default function PortfolioProjectForm({
       published: true,
       live_url: "",
       service_pages: [],
+      home_filter: "",
 
       overview: "",
       problem: "",
@@ -65,6 +73,7 @@ export default function PortfolioProjectForm({
       published: initialValues?.published ?? true,
       live_url: initialValues?.live_url ?? "",
       service_pages: Array.isArray(initialValues?.service_pages) ? initialValues.service_pages : [],
+      home_filter: initialValues?.home_filter ?? "",
 
       overview: initialValues?.overview ?? "",
       problem: initialValues?.problem ?? "",
@@ -189,6 +198,22 @@ export default function PortfolioProjectForm({
           Эти категории используются на страницах услуг и в фильтрах кейсов на главной.
           Если ничего не выбрано — кейс будет только в общем портфолио.
         </p>
+      </div>
+
+      <div className="space-y-2">
+        <label className="block text-sm font-display font-semibold text-white">
+          Фильтр кейса на главной (опционально)
+        </label>
+        <select
+          className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+          {...register("home_filter")}
+        >
+          {homeFilterOptions.map((o) => (
+            <option key={o.value || "none"} value={o.value}>
+              {o.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-2">

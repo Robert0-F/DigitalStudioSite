@@ -26,6 +26,9 @@ const typeLabels = {
 
 function matchesFilter(project, filterId) {
   if (filterId === "all") return true;
+  const homeFilter = String(project?.home_filter || "").trim();
+  if (homeFilter) return homeFilter === filterId;
+  // Fallback for old records where only service_pages was configured.
   const pages = Array.isArray(project?.service_pages) ? project.service_pages : [];
   return pages.includes(filterId);
 }
