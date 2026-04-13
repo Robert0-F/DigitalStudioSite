@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { X, Loader2, CheckCircle2 } from "lucide-react";
@@ -34,10 +35,12 @@ async function submitLead(payload) {
 }
 
 export default function LeadModal() {
+  const [mounted, setMounted] = useState(false);
   const [open, setOpen] = useState(false);
   const [status, setStatus] = useState("idle"); // idle | loading | success | error
   const [serverError, setServerError] = useState("");
   const autoCloseTimerRef = useRef(null);
+  const scrollYRef = useRef(0);
 
   const {
     register,
@@ -88,10 +91,26 @@ export default function LeadModal() {
   }, [open]);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (!open) return;
+    scrollYRef.current = window.scrollY;
+    const prevOverflow = document.body.style.overflow;
+    const prevPosition = document.body.style.position;
+    const prevTop = document.body.style.top;
+    const prevWidth = document.body.style.width;
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollYRef.current}px`;
+    document.body.style.width = "100%";
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = prevOverflow;
+      document.body.style.position = prevPosition;
+      document.body.style.top = prevTop;
+      document.body.style.width = prevWidth;
+      window.scrollTo(0, scrollYRef.current);
     };
   }, [open]);
 
@@ -126,14 +145,18 @@ export default function LeadModal() {
     }
   };
 
-  return (
+  const modal = (
     <AnimatePresence>
       {open && (
-        <>
+        <div
+          key="lead-modal-shell"
+          className="fixed inset-0 z-[200] flex items-center justify-center p-2 sm:p-5"
+          role="presentation"
+        >
           <motion.button
             type="button"
             aria-label="Закрыть окно"
-            className="fixed inset-0 z-[200] bg-black/78"
+            className="absolute inset-0 z-0 bg-black/80"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -144,11 +167,12 @@ export default function LeadModal() {
             role="dialog"
             aria-modal="true"
             aria-labelledby="lead-modal-title"
-            className="fixed left-1/2 top-1/2 z-[201] w-[min(92vw,620px)] max-h-[86vh] overflow-y-auto rounded-2xl border border-white/10 bg-[#0c0c12]/95 p-6 sm:p-8 shadow-card"
-            initial={{ opacity: 0, y: "-48%", x: "-50%" }}
-            animate={{ opacity: 1, y: "-50%", x: "-50%" }}
-            exit={{ opacity: 0, y: "-48%", x: "-50%" }}
+            className="relative z-10 flex max-h-[min(100dvh,100vh)] w-[min(100%,620px)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0c0c12] p-4 shadow-card sm:max-h-[min(92vh,860px)] sm:p-8"
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 8, scale: 0.98 }}
             transition={{ duration: 0.18, ease: "easeOut" }}
+            onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
@@ -160,7 +184,7 @@ export default function LeadModal() {
             </button>
 
             {status === "success" ? (
-              <div className="py-6 text-center">
+              <div className="flex flex-1 flex-col justify-center py-4 text-center sm:py-6">
                 <CheckCircle2 className="mx-auto mb-4 h-14 w-14 text-[var(--accent)]" />
                 <h2
                   id="lead-modal-title"
@@ -175,26 +199,26 @@ export default function LeadModal() {
             ) : (
               <form
                 onSubmit={handleSubmit(onSubmit)}
-                className="space-y-6"
+                className="flex min-h-0 flex-1 flex-col gap-4 sm:gap-5"
                 noValidate
                 aria-busy={status === "loading"}
               >
-                <div className="mb-2">
-                  <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
+                <div className="shrink-0">
+                  <p className="mb-2 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
                     Проектная заявка
                   </p>
                   <h2
                     id="lead-modal-title"
-                    className="font-display font-bold text-2xl sm:text-3xl text-white"
+                    className="font-display font-bold text-xl text-white sm:text-3xl"
                   >
                     Обсудим ваш проект
                   </h2>
-                  <p className="mt-3 text-sm text-[#71717a]">
+                  <p className="mt-2 text-xs text-[#71717a] sm:mt-3 sm:text-sm">
                     Заполните форму — подготовим ответ в рабочие часы.
                   </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5 sm:space-y-2">
                   <label
                     htmlFor="lead-name"
                     className="block text-sm font-display font-semibold text-white"
@@ -205,7 +229,7 @@ export default function LeadModal() {
                     id="lead-name"
                     type="text"
                     autoComplete="name"
-                    className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                    className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors sm:px-4 sm:py-3 sm:text-base"
                     placeholder="Как к вам обращаться"
                     aria-invalid={errors.name ? "true" : "false"}
                     {...register("name", {
@@ -231,7 +255,7 @@ export default function LeadModal() {
                     id="lead-contact"
                     type="text"
                     autoComplete="email"
-                    className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                    className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors sm:px-4 sm:py-3 sm:text-base"
                     placeholder="Email или телефон"
                     aria-invalid={errors.contact ? "true" : "false"}
                     {...register("contact", {
@@ -253,7 +277,7 @@ export default function LeadModal() {
                   )}
                 </div>
 
-                <div className="space-y-2">
+                <div className="min-h-0 flex-1 space-y-1.5 sm:space-y-2">
                   <label
                     htmlFor="lead-description"
                     className="block text-sm font-display font-semibold text-white"
@@ -262,14 +286,14 @@ export default function LeadModal() {
                   </label>
                   <textarea
                     id="lead-description"
-                    rows={4}
-                    className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-3 text-white placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors resize-y min-h-[110px]"
+                    rows={3}
+                    className="max-h-[28vh] min-h-[72px] w-full resize-none rounded-xl bg-[var(--bg-card)] border border-white/10 px-3 py-2.5 text-sm text-white placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors sm:max-h-none sm:min-h-[110px] sm:resize-y sm:px-4 sm:py-3 sm:text-base"
                     placeholder="Например: задачи, сроки, интеграции…"
                     {...register("description")}
                   />
                 </div>
 
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid shrink-0 gap-4 sm:grid-cols-2 sm:gap-5">
                   <div className="space-y-2">
                     <label
                       htmlFor="lead-type"
@@ -279,7 +303,7 @@ export default function LeadModal() {
                     </label>
                     <select
                       id="lead-type"
-                      className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-3 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                      className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-3 py-2.5 text-sm text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors sm:px-4 sm:py-3 sm:text-base"
                       defaultValue=""
                       {...register("projectType")}
                     >
@@ -298,7 +322,7 @@ export default function LeadModal() {
                   </p>
                 )}
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
+                <div className="mt-auto flex shrink-0 flex-col gap-2 sm:flex-row sm:justify-end sm:gap-3">
                   <Button
                     type="submit"
                     disabled={status === "loading"}
@@ -324,16 +348,20 @@ export default function LeadModal() {
                   </Button>
                 </div>
 
-                <p className="text-xs text-[#71717a]">
+                <p className="text-[10px] leading-snug text-[#71717a] sm:text-xs">
                   Нажимая кнопку «Отправить заявку», вы соглашаетесь на обработку
                   контактных данных для обратной связи. NDA по запросу.
                 </p>
               </form>
             )}
           </motion.div>
-        </>
+        </div>
       )}
     </AnimatePresence>
   );
+
+  if (!mounted) return null;
+
+  return createPortal(modal, document.body);
 }
 

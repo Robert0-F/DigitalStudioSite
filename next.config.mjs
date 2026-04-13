@@ -1,4 +1,22 @@
 /** @type {import('next').NextConfig} */
+function mediaRemotePatternsFromPublicUrl() {
+  const base = process.env.NEXT_PUBLIC_DJANGO_URL;
+  if (!base) return [];
+  try {
+    const u = new URL(base);
+    const protocol = u.protocol === "https:" ? "https" : "http";
+    const entry = {
+      protocol,
+      hostname: u.hostname,
+      pathname: "/media/**",
+    };
+    if (u.port) entry.port = u.port;
+    return [entry];
+  } catch {
+    return [];
+  }
+}
+
 const nextConfig = {
   transpilePackages: ["three", "@react-three/fiber"],
   async rewrites() {
@@ -30,6 +48,7 @@ const nextConfig = {
         port: "8000",
         pathname: "/media/**",
       },
+      ...mediaRemotePatternsFromPublicUrl(),
     ],
   },
 };
