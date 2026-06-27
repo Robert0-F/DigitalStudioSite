@@ -5,6 +5,7 @@ import Link from "next/link";
 
 import AdminTabs from "@/components/admin/AdminTabs";
 import Button from "@/components/ui/Button";
+import { adminErrorMessage, parseAdminJson } from "@/lib/adminApi";
 
 function formatPublished(v) {
   return v ? "Yes" : "No";
@@ -42,13 +43,23 @@ export default function AdminPortfolioPage() {
     setDeletingId(id);
     setError("");
     try {
-      const res = await fetch(`/api/admin/portfolio/${id}/`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Deletion failed");
-      await refresh();
+      const urls = [`/api/admin/portfolio/${id}/`, `/api/admin/portfolio/${id}`];
+      let lastError = "Deletion failed";
+      for (const url of urls) {
+        const res = await fetch(url, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) {
+          await refresh();
+          return;
+        }
+        const parsed = await parseAdminJson(res);
+        lastError = adminErrorMessage(parsed, "Deletion failed", res.status);
+        if (res.status === 404) continue;
+        break;
+      }
+      throw new Error(lastError);
     } catch (e) {
       setError(e?.message || "Deletion error");
     } finally {

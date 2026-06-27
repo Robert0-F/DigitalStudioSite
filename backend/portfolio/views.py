@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .auth import AdminCookieAuthentication
+from .media_utils import ensure_media_dirs, media_writable, safe_delete_filefield
 from .models import LeadSubmission, PortfolioProject, ProjectImage
 from .serializers import (
     LeadSubmissionSerializer,
@@ -31,6 +32,35 @@ def valid_email(v: str) -> bool:
 def valid_phone(v: str) -> bool:
     digits = "".join([c for c in str(v or "") if c.isdigit()])
     return len(digits) >= 10
+
+
+def _media_upload_guard():
+    ensure_media_dirs()
+    ok, err = media_writable()
+    if not ok:
+        return Response(
+            {
+                "error": (
+                    "Нет прав на запись в папку media. "
+                    f"На сервере выполните: sudo chown -R www-data:www-data backend/media. ({err})"
+                )
+            },
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+    return None
+
+
+def _delete_project_safe(project: PortfolioProject) -> None:
+    for image in list(project.images.all()):
+        safe_delete_filefield(image.image_file)
+        ProjectImage.objects.filter(pk=image.pk).delete()
+    safe_delete_filefield(project.hero_image)
+    PortfolioProject.objects.filter(pk=project.pk).delete()
+
+
+def _delete_image_safe(image: ProjectImage) -> None:
+    safe_delete_filefield(image.image_file)
+    ProjectImage.objects.filter(pk=image.pk).delete()
 
 
 class ContactSubmitView(APIView):
@@ -270,6 +300,11 @@ class AdminPortfolioListView(APIView):
 
             uploaded_file = request.FILES.get("heroImageFile") or request.FILES.get("imageFile")
 
+            if uploaded_file:
+                media_guard = _media_upload_guard()
+                if media_guard:
+                    return media_guard
+
             if slug:
                 # Быстрое сообщение о коллизии (уникальность slug важна для `/portfolio/[slug]`).
                 if PortfolioProject.objects.filter(slug=slug).exists():
@@ -303,10 +338,9 @@ class AdminPortfolioListView(APIView):
             if uploaded_file:
                 try:
                     project.hero_image = uploaded_file
-                    # hero_image_url оставляем, но serializer отдать hero_image при наличии файла.
                     project.save(update_fields=["hero_image"])
                 except Exception as e:
-                    # Common cause: Pillow can't identify the uploaded image format.
+                    project.delete()
                     return Response(
                         {"error": f"Ошибка загрузки hero_image: {str(e)}"},
                         status=status.HTTP_400_BAD_REQUEST,
@@ -337,68 +371,79 @@ class AdminPortfolioUpdateView(APIView):
         except PortfolioProject.DoesNotExist:
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        data = request.data or {}
+        try:
+            data = request.data or {}
 
-        title = str(data.get("title") or project.title).strip()
-        if not title:
-            return Response({"error": "title обязательное поле."}, status=status.HTTP_400_BAD_REQUEST)
+            title = str(data.get("title") or project.title).strip()
+            if not title:
+                return Response({"error": "title обязательное поле."}, status=status.HTTP_400_BAD_REQUEST)
 
-        raw_slug = data.get("slug")
-        if raw_slug is not None and str(raw_slug).strip() != "":
-            slug = latin_slug_from_text(str(raw_slug).strip()) or None
-        else:
-            slug = project.slug
-
-        if slug and slug != project.slug:
-            if PortfolioProject.objects.filter(slug=slug).exclude(id=project.id).exists():
-                return Response({"error": "slug уже используется."}, status=status.HTTP_400_BAD_REQUEST)
-
-        project.project_type = str(data.get("project_type") or data.get("category") or project.project_type or "").strip()
-        project.subtitle = str(data.get("subtitle") or project.subtitle or "").strip()
-        project.client_industry = str(data.get("client_industry") or project.client_industry or "").strip()
-
-        # Optional: service page binding.
-        # Important: if form submits no `service_pages` values (all checkboxes unchecked),
-        # we must persist an empty list to allow clearing links.
-        if hasattr(data, "getlist"):
-            project.service_pages = [str(x).strip() for x in data.getlist("service_pages") if str(x).strip()]
-        elif data.get("service_pages") is not None:
-            raw = data.get("service_pages")
-            if isinstance(raw, list):
-                project.service_pages = [str(x).strip() for x in raw if str(x).strip()]
+            raw_slug = data.get("slug")
+            if raw_slug is not None and str(raw_slug).strip() != "":
+                slug = latin_slug_from_text(str(raw_slug).strip()) or None
             else:
-                project.service_pages = [s.strip() for s in str(raw or "").split(",") if s.strip()]
-        if data.get("home_filter") is not None:
-            project.home_filter = str(data.get("home_filter") or "").strip()
+                slug = project.slug
 
-        project.overview = str(data.get("overview") or data.get("description") or project.overview or "").strip()
-        project.problem = str(data.get("problem") or project.problem or "").strip()
-        project.solution = str(data.get("solution") or project.solution or "").strip()
-        project.process = str(data.get("process") or project.process or "").strip()
-        project.results = str(data.get("results") or project.results or "").strip()
-        project.technologies = str(data.get("technologies") or project.technologies or "").strip()
-        project.final = str(data.get("final") or project.final or "").strip()
+            if slug and slug != project.slug:
+                if PortfolioProject.objects.filter(slug=slug).exclude(id=project.id).exists():
+                    return Response({"error": "slug уже используется."}, status=status.HTTP_400_BAD_REQUEST)
 
-        project.live_url = str(data.get("live_url") or project.live_url or "").strip() or None
-        project.slug = slug
-        project.title = title
+            project.project_type = str(data.get("project_type") or data.get("category") or project.project_type or "").strip()
+            project.subtitle = str(data.get("subtitle") or project.subtitle or "").strip()
+            project.client_industry = str(data.get("client_industry") or project.client_industry or "").strip()
 
-        project.published = parse_bool(data.get("published", project.published))
+            if hasattr(data, "getlist"):
+                project.service_pages = [str(x).strip() for x in data.getlist("service_pages") if str(x).strip()]
+            elif data.get("service_pages") is not None:
+                raw = data.get("service_pages")
+                if isinstance(raw, list):
+                    project.service_pages = [str(x).strip() for x in raw if str(x).strip()]
+                else:
+                    project.service_pages = [s.strip() for s in str(raw or "").split(",") if s.strip()]
+            if data.get("home_filter") is not None:
+                project.home_filter = str(data.get("home_filter") or "").strip()
 
-        hero_image_url = (
-            str(data.get("hero_image_url") or data.get("image_url") or "").strip()
-        )
-        if hero_image_url != "":
-            project.hero_image_url = hero_image_url
-        # uploaded file has priority over url
-        uploaded_file = request.FILES.get("heroImageFile") or request.FILES.get("imageFile")
-        if uploaded_file:
-            project.hero_image = uploaded_file
+            project.overview = str(data.get("overview") or data.get("description") or project.overview or "").strip()
+            project.problem = str(data.get("problem") or project.problem or "").strip()
+            project.solution = str(data.get("solution") or project.solution or "").strip()
+            project.process = str(data.get("process") or project.process or "").strip()
+            project.results = str(data.get("results") or project.results or "").strip()
+            project.technologies = str(data.get("technologies") or project.technologies or "").strip()
+            project.final = str(data.get("final") or project.final or "").strip()
 
-        project.save()
+            project.live_url = str(data.get("live_url") or project.live_url or "").strip() or None
+            project.slug = slug
+            project.title = title
 
-        serializer = PortfolioProjectDetailSerializer(project, context={"request": request})
-        return Response({"project": serializer.data}, status=status.HTTP_200_OK)
+            project.published = parse_bool(data.get("published", project.published))
+
+            hero_image_url = (
+                str(data.get("hero_image_url") or data.get("image_url") or "").strip()
+            )
+            if hero_image_url != "":
+                project.hero_image_url = hero_image_url
+
+            uploaded_file = request.FILES.get("heroImageFile") or request.FILES.get("imageFile")
+            if uploaded_file:
+                media_guard = _media_upload_guard()
+                if media_guard:
+                    return media_guard
+                try:
+                    if project.hero_image:
+                        safe_delete_filefield(project.hero_image)
+                    project.hero_image = uploaded_file
+                except Exception as e:
+                    return Response(
+                        {"error": f"Ошибка загрузки hero_image: {str(e)}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            project.save()
+
+            serializer = PortfolioProjectDetailSerializer(project, context={"request": request})
+            return Response({"project": serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, id):
         """
@@ -414,8 +459,11 @@ class AdminPortfolioUpdateView(APIView):
         except PortfolioProject.DoesNotExist:
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        project.delete()
-        return Response({"ok": True}, status=status.HTTP_200_OK)
+        try:
+            _delete_project_safe(project)
+            return Response({"ok": True}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminPortfolioDeleteView(APIView):
@@ -436,8 +484,11 @@ class AdminPortfolioDeleteView(APIView):
         except PortfolioProject.DoesNotExist:
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        project.delete()
-        return Response({"ok": True}, status=status.HTTP_200_OK)
+        try:
+            _delete_project_safe(project)
+            return Response({"ok": True}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminPortfolioImagesListCreateView(APIView):
@@ -447,6 +498,7 @@ class AdminPortfolioImagesListCreateView(APIView):
     """
 
     authentication_classes = [AdminCookieAuthentication]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser]
 
     def _require_admin(self, request):
         if request.COOKIES.get("admin_session") != "1":
@@ -467,46 +519,60 @@ class AdminPortfolioImagesListCreateView(APIView):
         if guard:
             return guard
 
-        project = PortfolioProject.objects.filter(id=id).first()
-        if not project:
-            return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
-
-        data = request.data or {}
-        caption = str(data.get("caption") or "").strip()
-
-        block_size = str(data.get("block_size") or PortfolioProject.BLOCK_SIZE_MD).strip()
-        object_fit = str(data.get("object_fit") or PortfolioProject.OBJECT_FIT_COVER).strip()
-        aspect_ratio = str(data.get("aspect_ratio") or PortfolioProject.ASPECT_AUTO).strip()
-
-        sort_order_raw = data.get("sort_order")
         try:
-            sort_order = int(sort_order_raw) if sort_order_raw is not None else 0
-        except Exception:
-            sort_order = 0
+            project = PortfolioProject.objects.filter(id=id).first()
+            if not project:
+                return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        image_url = str(data.get("image_url") or "").strip() or None
-        uploaded_file = request.FILES.get("imageFile") or request.FILES.get("image_file")
+            data = request.data or {}
+            caption = str(data.get("caption") or "").strip()
 
-        if not uploaded_file and not image_url:
-            return Response({"error": "imageFile или image_url обязательны."}, status=status.HTTP_400_BAD_REQUEST)
+            block_size = str(data.get("block_size") or PortfolioProject.BLOCK_SIZE_MD).strip()
+            object_fit = str(data.get("object_fit") or PortfolioProject.OBJECT_FIT_COVER).strip()
+            aspect_ratio = str(data.get("aspect_ratio") or PortfolioProject.ASPECT_AUTO).strip()
 
-        image = ProjectImage.objects.create(
-            project=project,
-            caption=caption,
-            block_size=block_size,
-            object_fit=object_fit,
-            aspect_ratio=aspect_ratio,
-            sort_order=sort_order,
-            image_url=image_url,
-        )
-        if uploaded_file:
-            image.image_file = uploaded_file
-            # Если загружен файл — URL не нужен.
-            image.image_url = None
-            image.save(update_fields=["image_file", "image_url"])
+            sort_order_raw = data.get("sort_order")
+            try:
+                sort_order = int(sort_order_raw) if sort_order_raw is not None else 0
+            except Exception:
+                sort_order = 0
 
-        serializer = ProjectImageSerializer(image, context={"request": request})
-        return Response({"image": serializer.data}, status=status.HTTP_201_CREATED)
+            image_url = str(data.get("image_url") or "").strip() or None
+            uploaded_file = request.FILES.get("imageFile") or request.FILES.get("image_file")
+
+            if not uploaded_file and not image_url:
+                return Response({"error": "imageFile или image_url обязательны."}, status=status.HTTP_400_BAD_REQUEST)
+
+            if uploaded_file:
+                media_guard = _media_upload_guard()
+                if media_guard:
+                    return media_guard
+
+            image = ProjectImage.objects.create(
+                project=project,
+                caption=caption,
+                block_size=block_size,
+                object_fit=object_fit,
+                aspect_ratio=aspect_ratio,
+                sort_order=sort_order,
+                image_url=image_url,
+            )
+            if uploaded_file:
+                try:
+                    image.image_file = uploaded_file
+                    image.image_url = None
+                    image.save(update_fields=["image_file", "image_url"])
+                except Exception as e:
+                    image.delete()
+                    return Response(
+                        {"error": f"Ошибка загрузки изображения: {str(e)}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+
+            serializer = ProjectImageSerializer(image, context={"request": request})
+            return Response({"image": serializer.data}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class AdminProjectImageUpdateDeleteView(APIView):
@@ -516,6 +582,7 @@ class AdminProjectImageUpdateDeleteView(APIView):
     """
 
     authentication_classes = [AdminCookieAuthentication]
+    parser_classes = [parsers.JSONParser, parsers.MultiPartParser, parsers.FormParser]
 
     def _require_admin(self, request):
         if request.COOKIES.get("admin_session") != "1":
@@ -531,35 +598,48 @@ class AdminProjectImageUpdateDeleteView(APIView):
         if not image:
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        data = request.data or {}
-        image.caption = str(data.get("caption") or image.caption or "").strip()
+        try:
+            data = request.data or {}
+            image.caption = str(data.get("caption") or image.caption or "").strip()
 
-        if data.get("block_size"):
-            image.block_size = str(data.get("block_size")).strip()
-        if data.get("object_fit"):
-            image.object_fit = str(data.get("object_fit")).strip()
-        if data.get("aspect_ratio") is not None:
-            image.aspect_ratio = str(data.get("aspect_ratio")).strip() or image.aspect_ratio
+            if data.get("block_size"):
+                image.block_size = str(data.get("block_size")).strip()
+            if data.get("object_fit"):
+                image.object_fit = str(data.get("object_fit")).strip()
+            if data.get("aspect_ratio") is not None:
+                image.aspect_ratio = str(data.get("aspect_ratio")).strip() or image.aspect_ratio
 
-        if data.get("sort_order") is not None:
-            try:
-                image.sort_order = int(data.get("sort_order"))
-            except Exception:
-                pass
+            if data.get("sort_order") is not None:
+                try:
+                    image.sort_order = int(data.get("sort_order"))
+                except Exception:
+                    pass
 
-        image_url = str(data.get("image_url") or "").strip()
-        if image_url != "":
-            # Если новый URL, заменяем на него. Файл — при наличии заменит на файл позже.
-            image.image_url = image_url
+            image_url = str(data.get("image_url") or "").strip()
+            if image_url != "":
+                image.image_url = image_url
 
-        uploaded_file = request.FILES.get("imageFile") or request.FILES.get("image_file")
-        if uploaded_file:
-            image.image_file = uploaded_file
-            image.image_url = None
+            uploaded_file = request.FILES.get("imageFile") or request.FILES.get("image_file")
+            if uploaded_file:
+                media_guard = _media_upload_guard()
+                if media_guard:
+                    return media_guard
+                try:
+                    if image.image_file:
+                        safe_delete_filefield(image.image_file)
+                    image.image_file = uploaded_file
+                    image.image_url = None
+                except Exception as e:
+                    return Response(
+                        {"error": f"Ошибка загрузки изображения: {str(e)}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-        image.save()
-        serializer = ProjectImageSerializer(image, context={"request": request})
-        return Response({"image": serializer.data}, status=status.HTTP_200_OK)
+            image.save()
+            serializer = ProjectImageSerializer(image, context={"request": request})
+            return Response({"image": serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def delete(self, request, image_id):
         guard = self._require_admin(request)
@@ -570,6 +650,9 @@ class AdminProjectImageUpdateDeleteView(APIView):
         if not image:
             return Response({"error": "Not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        image.delete()
-        return Response({"ok": True}, status=status.HTTP_200_OK)
+        try:
+            _delete_image_safe(image)
+            return Response({"ok": True}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

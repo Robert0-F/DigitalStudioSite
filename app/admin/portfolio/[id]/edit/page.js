@@ -6,6 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import AdminTabs from "@/components/admin/AdminTabs";
 import PortfolioProjectForm from "@/components/admin/PortfolioProjectForm";
 import Button from "@/components/ui/Button";
+import { adminErrorMessage, parseAdminJson } from "@/lib/adminApi";
 import ProjectImagesManager from "@/components/admin/ProjectImagesManager";
 
 export default function AdminPortfolioEditPage() {
@@ -77,15 +78,9 @@ export default function AdminPortfolioEditPage() {
         body: fd,
         credentials: "include",
       });
-      const raw = await res.text().catch(() => "");
-      let json = null;
-      try {
-        json = raw ? JSON.parse(raw) : null;
-      } catch {
-        json = null;
-      }
+      const parsed = await parseAdminJson(res);
       if (!res.ok) {
-        throw new Error(json?.error || raw || `Save failed (${res.status})`);
+        throw new Error(adminErrorMessage(parsed, "Save failed", res.status));
       }
 
       router.push("/admin/portfolio");

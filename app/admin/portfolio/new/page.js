@@ -6,6 +6,7 @@ import { useState } from "react";
 import AdminTabs from "@/components/admin/AdminTabs";
 import PortfolioProjectForm from "@/components/admin/PortfolioProjectForm";
 import Button from "@/components/ui/Button";
+import { adminErrorMessage, parseAdminJson } from "@/lib/adminApi";
 
 export default function AdminPortfolioNewPage() {
   const router = useRouter();
@@ -47,17 +48,11 @@ export default function AdminPortfolioNewPage() {
         body: fd,
         credentials: "include",
       });
-      const raw = await res.text().catch(() => "");
-      let json = null;
-      try {
-        json = raw ? JSON.parse(raw) : null;
-      } catch {
-        json = null;
-      }
+      const parsed = await parseAdminJson(res);
       if (!res.ok) {
-        throw new Error(json?.error || raw || `Save failed (${res.status})`);
+        throw new Error(adminErrorMessage(parsed, "Save failed", res.status));
       }
-      const projectId = json?.project?.id;
+      const projectId = parsed.data?.project?.id;
       if (!projectId) throw new Error("Project id missing in response");
       router.push(`/admin/portfolio/${projectId}/edit`);
     } catch (e) {

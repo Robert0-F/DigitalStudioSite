@@ -47,7 +47,7 @@ sudo systemctl restart digitalstudio-django
 ```bash
 sudo systemctl status digitalstudio-next
 sudo systemctl status digitalstudio-django
-sudo systemctl status nginx
+
 ```
 
 Логи в реальном времени:
@@ -68,7 +68,30 @@ sudo journalctl -u digitalstudio-django -f
 
 Поэтому при временно недоступном Django сборка не падает, а страницы портфолио собираются безопасно с пустыми данными.
 
-## Картинки с сервера не видны (локально OK, на проде пусто)
+## Админка: ошибка 500 при загрузке / удалении кейсов
+
+Частая причина на сервере — **нет прав на папку media** у пользователя `www-data` (Gunicorn).
+
+```bash
+sudo mkdir -p /var/www/digitalstudio/backend/media/portfolio/hero
+sudo mkdir -p /var/www/digitalstudio/backend/media/portfolio/images
+sudo chown -R www-data:www-data /var/www/digitalstudio/backend/media
+sudo chmod -R u+rwX,g+rwX /var/www/digitalstudio/backend/media
+sudo systemctl restart digitalstudio-django
+```
+
+После обновления кода с GitHub:
+
+```bash
+cd /var/www/digitalstudio
+git pull origin main
+cd backend && source .venv/bin/activate && python manage.py migrate
+sudo systemctl restart digitalstudio-django
+cd /var/www/digitalstudio && npm run build && sudo systemctl restart digitalstudio-next
+```
+
+Если ошибка останется — в админке теперь показывается **текст ошибки JSON** (не HTML «Server Error 500»).
+
 
 Частые причины:
 

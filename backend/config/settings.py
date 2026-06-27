@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
-    "portfolio",
+    "portfolio.apps.PortfolioConfig",
 ]
 
 MIDDLEWARE = [
@@ -83,7 +83,11 @@ REST_FRAMEWORK = {
         "rest_framework.parsers.MultiPartParser",
         "rest_framework.parsers.FormParser",
     ],
+    "EXCEPTION_HANDLER": "portfolio.exceptions.api_exception_handler",
 }
+
+FILE_UPLOAD_PERMISSIONS = 0o644
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024
 
 # Important: Next.js frontend sends requests without following trailing-slash redirects.
 APPEND_SLASH = False

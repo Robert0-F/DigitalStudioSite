@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 
 import Button from "@/components/ui/Button";
+import { adminErrorMessage, parseAdminJson } from "@/lib/adminApi";
 
 const blockSizeOptions = [
   { value: "sm", label: "sm (25%)" },
@@ -37,9 +38,9 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/portfolio/${projectId}/images`, { credentials: "include" });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to load images");
-      setImages(json.images ?? []);
+      const parsed = await parseAdminJson(res);
+      if (!res.ok) throw new Error(adminErrorMessage(parsed, "Failed to load images", res.status));
+      setImages(parsed.data?.images ?? []);
     } catch (e) {
       setError(e?.message || "Error");
     } finally {
@@ -61,13 +62,26 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
     const ok = window.confirm("Remove this image?");
     if (!ok) return;
     try {
-      const res = await fetch(`/api/admin/portfolio/images/${imageId}/`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Delete failed");
-      await refresh();
+      const urls = [
+        `/api/admin/portfolio/images/${imageId}/`,
+        `/api/admin/portfolio/images/${imageId}`,
+      ];
+      let lastError = "Delete failed";
+      for (const url of urls) {
+        const res = await fetch(url, {
+          method: "DELETE",
+          credentials: "include",
+        });
+        if (res.ok) {
+          await refresh();
+          return;
+        }
+        const parsed = await parseAdminJson(res);
+        lastError = adminErrorMessage(parsed, "Delete failed", res.status);
+        if (res.status === 404) continue;
+        break;
+      }
+      throw new Error(lastError);
     } catch (e) {
       setError(e?.message || "Delete failed");
     }
@@ -88,8 +102,8 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
         body: fd,
         credentials: "include",
       });
-      const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Update failed");
+      const parsed = await parseAdminJson(res);
+      if (!res.ok) throw new Error(adminErrorMessage(parsed, "Update failed", res.status));
       await refresh();
     } catch (e) {
       setError(e?.message || "Update failed");
@@ -138,8 +152,8 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
           body: fd,
           credentials: "include",
         });
-        const json = await res.json().catch(() => null);
-        if (!res.ok) throw new Error(json?.error || "Upload failed");
+        const parsed = await parseAdminJson(res);
+        if (!res.ok) throw new Error(adminErrorMessage(parsed, "Upload failed", res.status));
       }
 
       setPendingUploads([]);
