@@ -56,6 +56,33 @@ sudo systemctl status digitalstudio-django --no-pager
 sudo systemctl status digitalstudio-next --no-pager
 ```
 
+### Если картинки «есть», но не показываются
+
+На сервере выполни проверки:
+
+```bash
+# 1) Файл реально на диске?
+sudo ls -la /var/www/digitalstudio/backend/media/portfolio/hero/ | head
+
+# 2) Django (Gunicorn) отдаёт media? (должно быть 200)
+curl -sS -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/media/portfolio/hero/hero_IWoWyHq.webp
+
+# 3) Nginx отдаёт media с домена?
+curl -sS -o /dev/null -w "%{http_code}\n" https://tagirovweb.ru/media/portfolio/hero/hero_IWoWyHq.webp
+
+# 4) В JSON путь относительный /media/...?
+curl -sS https://tagirovweb.ru/api/portfolio | head -c 400
+echo
+```
+
+Потом **обязательно** `git pull` + `npm run build` + restart обоих сервисов (фикс: Django раздаёт media при `DEBUG=false`, Next Image ходит на `127.0.0.1:8000`, не на публичный HTTPS).
+
+В `.env.local` можно явно добавить (не обязательно, дефолт и так такой):
+
+```bash
+grep DJANGO_INTERNAL_URL /var/www/digitalstudio/.env.local || echo 'DJANGO_INTERNAL_URL=http://127.0.0.1:8000' | sudo tee -a /var/www/digitalstudio/.env.local
+```
+
 Проверка в браузере:
 
 ```bash
@@ -115,6 +142,9 @@ NEXT_PUBLIC_DJANGO_URL=https://tagirovweb.ru
 NEXT_PUBLIC_SITE_URL=https://tagirovweb.ru
 NEXT_PUBLIC_TELEGRAM_URL=https://t.me/robertprog
 NEXT_PUBLIC_YANDEX_METRIKA_ID=
+
+# Next rewrite /api и /media → локальный Gunicorn (не публичный URL!)
+DJANGO_INTERNAL_URL=http://127.0.0.1:8000
 
 DJANGO_SECRET_KEY=CHANGE_ME_LONG_RANDOM_SECRET
 DJANGO_DEBUG=false

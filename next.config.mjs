@@ -29,19 +29,21 @@ const nextConfig = {
     ];
   },
   async rewrites() {
-    const djangoBase = (
-      process.env.NEXT_PUBLIC_DJANGO_URL || "http://127.0.0.1:8000"
-    )
-      .replace("://localhost:", "://127.0.0.1:")
-      .replace(/:\/\/localhost$/, "://127.0.0.1");
+    // Важно: для rewrite на сервере всегда 127.0.0.1:8000 (Gunicorn),
+    // а НЕ публичный https://домен — иначе Next Image упирается в hairpin/таймаут
+    // и картинки «есть в API», но не рисуются.
+    const djangoInternal = (
+      process.env.DJANGO_INTERNAL_URL ||
+      "http://127.0.0.1:8000"
+    ).replace(/\/$/, "");
     return [
       {
         source: "/api/:path*",
-        destination: `${djangoBase}/api/:path*`,
+        destination: `${djangoInternal}/api/:path*`,
       },
       {
         source: "/media/:path*",
-        destination: `${djangoBase}/media/:path*`,
+        destination: `${djangoInternal}/media/:path*`,
       },
     ];
   },
