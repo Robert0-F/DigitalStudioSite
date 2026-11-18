@@ -14,7 +14,6 @@ function aspectRatioClass(aspectRatio) {
 }
 
 function blockSpanClass(blockSize) {
-  // Mobile: колонки не важны, всё во всю ширину.
   const map = {
     sm: "sm:col-span-1",
     md: "sm:col-span-2",
@@ -25,7 +24,9 @@ function blockSpanClass(blockSize) {
 }
 
 export default function ImageGallery({ images, projectTitle }) {
-  const list = Array.isArray(images) ? images.slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)) : [];
+  const list = Array.isArray(images)
+    ? images.slice().sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
+    : [];
   if (!list.length) return null;
 
   return (
@@ -39,18 +40,20 @@ export default function ImageGallery({ images, projectTitle }) {
 
         return (
           <figure key={img.id} className={`col-span-4 ${colSpan}`}>
-            <div className={`relative overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c0c12] ${aspect}`}>
+            <div
+              className={`group relative overflow-hidden rounded-[14px] border border-[var(--border-soft)] bg-cream-200 ${aspect}`}
+            >
               <Image
                 src={img.image_url}
                 alt={img.caption || projectTitle || "Изображение проекта"}
                 fill
-                className={`${objectClass} transition-transform duration-500 hover:scale-[1.03]`}
+                className={`${objectClass} motion-safe-zoom`}
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                 loading="lazy"
               />
             </div>
             {img.caption ? (
-              <figcaption className="mt-3 text-xs text-[#71717a]">{img.caption}</figcaption>
+              <figcaption className="mt-3 text-xs text-ink-muted">{img.caption}</figcaption>
             ) : null}
           </figure>
         );
@@ -58,4 +61,3 @@ export default function ImageGallery({ images, projectTitle }) {
     </div>
   );
 }
-

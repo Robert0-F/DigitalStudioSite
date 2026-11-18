@@ -2,29 +2,39 @@ from django.urls import path
 
 from .views import (
     AdminAuthView,
+    AdminCategoriesView,
+    AdminCategoryDetailView,
+    AdminLeadUpdateView,
     AdminLeadsListView,
     AdminPortfolioImagesListCreateView,
     AdminPortfolioListView,
     AdminPortfolioUpdateView,
     AdminProjectImageUpdateDeleteView,
+    AdminSiteSettingsView,
     ContactSubmitView,
     PublicPortfolioView,
     PublicPortfolioDetailView,
+    PublicSiteSettingsView,
 )
 
 urlpatterns = [
     path("api/contact", ContactSubmitView.as_view()),
     path("api/portfolio", PublicPortfolioView.as_view()),
     path("api/portfolio/<slug:slug>", PublicPortfolioDetailView.as_view()),
+    path("api/site-settings", PublicSiteSettingsView.as_view()),
     path("api/admin/auth", AdminAuthView.as_view()),
+    path("api/admin/site-settings", AdminSiteSettingsView.as_view()),
     path("api/admin/leads", AdminLeadsListView.as_view()),
+    path("api/admin/leads/<uuid:id>", AdminLeadUpdateView.as_view()),
+    path("api/admin/leads/<uuid:id>/", AdminLeadUpdateView.as_view()),
+    path("api/admin/categories", AdminCategoriesView.as_view()),
+    path("api/admin/categories/<uuid:id>", AdminCategoryDetailView.as_view()),
+    path("api/admin/categories/<uuid:id>/", AdminCategoryDetailView.as_view()),
     path("api/admin/portfolio", AdminPortfolioListView.as_view()),
     path("api/admin/portfolio/<uuid:id>/", AdminPortfolioUpdateView.as_view()),
-    # без завершающего слеша (иногда Next/rewrites отправляют так)
     path("api/admin/portfolio/<uuid:id>", AdminPortfolioUpdateView.as_view()),
     path("api/admin/portfolio/<uuid:id>/images", AdminPortfolioImagesListCreateView.as_view()),
     path("api/admin/portfolio/<uuid:id>/images/", AdminPortfolioImagesListCreateView.as_view()),
     path("api/admin/portfolio/images/<uuid:image_id>/", AdminProjectImageUpdateDeleteView.as_view()),
     path("api/admin/portfolio/images/<uuid:image_id>", AdminProjectImageUpdateDeleteView.as_view()),
 ]
-

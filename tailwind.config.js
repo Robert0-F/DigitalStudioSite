@@ -1,19 +1,36 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: [
-    "./app/**/*.{js,jsx}",
-    "./components/**/*.{js,jsx}",
-  ],
+  content: ["./app/**/*.{js,jsx}", "./components/**/*.{js,jsx}"],
   theme: {
     extend: {
       colors: {
-        void: "#050508",
-        cyber: {
-          50: "#eef2ff",
-          100: "#e0e7ff",
-          400: "#818cf8",
-          500: "#6366f1",
-          600: "#4f46e5",
+        cream: {
+          50: "#fffbf7",
+          100: "#f3f0ea",
+          200: "#e8e2d8",
+        },
+        ink: {
+          DEFAULT: "#171411",
+          muted: "#5c564e",
+        },
+        teal: {
+          DEFAULT: "#0f5c4c",
+          deep: "#0c4a3d",
+          soft: "#147a66",
+          muted: "#d7ebe4",
+        },
+        clay: {
+          DEFAULT: "#b45309",
+          soft: "#f3e0c8",
+        },
+        paper: {
+          bg: "var(--bg-primary)",
+          surface: "var(--bg-secondary)",
+          card: "var(--bg-card)",
+          inverse: "var(--bg-inverse)",
+          accent: "var(--accent)",
+          signal: "var(--signal)",
+          muted: "var(--text-muted)",
         },
         studio: {
           bg: "var(--bg-primary)",
@@ -28,10 +45,13 @@ module.exports = {
         body: ["var(--font-body)", "system-ui", "sans-serif"],
       },
       boxShadow: {
-        glow: "0 0 80px -20px rgba(99, 102, 241, 0.25)",
-        "glow-sm": "0 0 50px -25px rgba(129, 140, 248, 0.2)",
-        depth: "0 32px 64px -16px rgba(0, 0, 0, 0.6)",
-        card: "0 20px 50px -12px rgba(0, 0, 0, 0.55)",
+        soft: "0 18px 40px -24px rgba(23, 20, 17, 0.32)",
+        card: "0 20px 48px -28px rgba(23, 20, 17, 0.28)",
+        lift: "0 22px 44px -22px rgba(15, 92, 76, 0.28)",
+      },
+      borderRadius: {
+        card: "1.125rem",
+        device: "0.875rem",
       },
     },
   },

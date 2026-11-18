@@ -68,6 +68,22 @@ sudo journalctl -u digitalstudio-django -f
 
 Поэтому при временно недоступном Django сборка не падает, а страницы портфолио собираются безопасно с пустыми данными.
 
+## Ошибка: attempt to write a readonly database
+
+SQLite пишет не только в файл `db.sqlite3`, но и journal/WAL в **папку** `backend/`.
+Gunicorn под `www-data` должен иметь запись и на файл, и на каталог:
+
+```bash
+sudo chown -R www-data:www-data /var/www/digitalstudio/backend
+sudo chmod u+rw /var/www/digitalstudio/backend/db.sqlite3
+sudo chmod u+rwx /var/www/digitalstudio/backend
+# если есть WAL/SHM:
+sudo chmod u+rw /var/www/digitalstudio/backend/db.sqlite3-* 2>/dev/null || true
+sudo systemctl restart digitalstudio-django
+```
+
+Проверьте в unit-файле: `User=www-data` и `WorkingDirectory=/var/www/digitalstudio/backend`.
+
 ## Админка: ошибка 500 при загрузке / удалении кейсов
 
 Частая причина на сервере — **нет прав на папку media** у пользователя `www-data` (Gunicorn).

@@ -1,11 +1,12 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
-import Trust from "@/components/Trust";
 import Services from "@/components/Services";
 import Portfolio from "@/components/Portfolio";
-import Process from "@/components/Process";
 import WorkingPrinciples from "@/components/WorkingPrinciples";
-import PremiumCTA from "@/components/PremiumCTA";
+import Process from "@/components/Process";
+import Pricing from "@/components/Pricing";
+import Reviews from "@/components/Reviews";
+import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 
@@ -13,14 +14,15 @@ export default function Home() {
   return (
     <>
       <Header />
-      <main>
+      <main id="main-content">
         <Hero />
-        <Trust />
         <Services />
         <Portfolio />
-        <Process />
         <WorkingPrinciples />
-        <PremiumCTA />
+        <Process />
+        <Pricing />
+        <Reviews />
+        <FAQ />
         <Contact />
       </main>
       <Footer />

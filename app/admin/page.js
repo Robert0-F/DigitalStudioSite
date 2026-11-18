@@ -7,7 +7,7 @@ export default async function AdminPage() {
   const c = (await cookies()).get("admin_session");
   if (!c?.value) {
     return (
-      <main className="min-h-screen bg-[#050508] pt-28 pb-24">
+      <main className="min-h-screen bg-[var(--bg-primary)] pt-28 pb-24">
         <AdminPasswordGate />
       </main>
     );

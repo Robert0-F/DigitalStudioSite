@@ -14,8 +14,8 @@ const blockSizeOptions = [
 ];
 
 const objectFitOptions = [
-  { value: "cover", label: "cover (crop)" },
-  { value: "contain", label: "contain (fit)" },
+  { value: "cover", label: "cover (обрезка)" },
+  { value: "contain", label: "contain (вписать)" },
 ];
 
 const aspectRatioOptions = [
@@ -25,12 +25,15 @@ const aspectRatioOptions = [
   { value: "portrait", label: "portrait (9:16)" },
 ];
 
+const fieldClass = "field-input py-2";
+const labelClass = "mb-1 block text-xs font-semibold text-ink-muted";
+
 export default function ProjectImagesManager({ projectId, initialImages = [] }) {
   const [images, setImages] = useState(initialImages);
   const [loading, setLoading] = useState(!initialImages?.length);
   const [error, setError] = useState("");
 
-  const [pendingUploads, setPendingUploads] = useState([]); // {file, previewUrl, ...fields}
+  const [pendingUploads, setPendingUploads] = useState([]);
   const [uploading, setUploading] = useState(false);
 
   const refresh = async () => {
@@ -39,10 +42,10 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
     try {
       const res = await fetch(`/api/admin/portfolio/${projectId}/images`, { credentials: "include" });
       const parsed = await parseAdminJson(res);
-      if (!res.ok) throw new Error(adminErrorMessage(parsed, "Failed to load images", res.status));
+      if (!res.ok) throw new Error(adminErrorMessage(parsed, "Не удалось загрузить изображения", res.status));
       setImages(parsed.data?.images ?? []);
     } catch (e) {
-      setError(e?.message || "Error");
+      setError(e?.message || "Ошибка");
     } finally {
       setLoading(false);
     }
@@ -59,14 +62,14 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
 
   const removeImage = async (imageId) => {
     setError("");
-    const ok = window.confirm("Remove this image?");
+    const ok = window.confirm("Удалить это изображение?");
     if (!ok) return;
     try {
       const urls = [
         `/api/admin/portfolio/images/${imageId}/`,
         `/api/admin/portfolio/images/${imageId}`,
       ];
-      let lastError = "Delete failed";
+      let lastError = "Удаление не удалось";
       for (const url of urls) {
         const res = await fetch(url, {
           method: "DELETE",
@@ -77,13 +80,13 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
           return;
         }
         const parsed = await parseAdminJson(res);
-        lastError = adminErrorMessage(parsed, "Delete failed", res.status);
+        lastError = adminErrorMessage(parsed, "Удаление не удалось", res.status);
         if (res.status === 404) continue;
         break;
       }
       throw new Error(lastError);
     } catch (e) {
-      setError(e?.message || "Delete failed");
+      setError(e?.message || "Удаление не удалось");
     }
   };
 
@@ -103,10 +106,10 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
         credentials: "include",
       });
       const parsed = await parseAdminJson(res);
-      if (!res.ok) throw new Error(adminErrorMessage(parsed, "Update failed", res.status));
+      if (!res.ok) throw new Error(adminErrorMessage(parsed, "Не удалось сохранить", res.status));
       await refresh();
     } catch (e) {
-      setError(e?.message || "Update failed");
+      setError(e?.message || "Не удалось сохранить");
     }
   };
 
@@ -114,7 +117,8 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
     const list = Array.from(files || []);
     if (!list.length) return;
 
-    const nextSortStart = (sortedImages?.length ? Math.max(...sortedImages.map((i) => i.sort_order ?? 0)) : -1) + 1;
+    const nextSortStart =
+      (sortedImages?.length ? Math.max(...sortedImages.map((i) => i.sort_order ?? 0)) : -1) + 1;
     const next = list.map((file, idx) => {
       const previewUrl = URL.createObjectURL(file);
       return {
@@ -137,7 +141,6 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
     setUploading(true);
 
     try {
-      // Upload sequentially to simplify debugging and to keep sort_order stable.
       for (const p of pendingUploads) {
         const fd = new FormData();
         fd.append("caption", p.caption || "");
@@ -153,13 +156,13 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
           credentials: "include",
         });
         const parsed = await parseAdminJson(res);
-        if (!res.ok) throw new Error(adminErrorMessage(parsed, "Upload failed", res.status));
+        if (!res.ok) throw new Error(adminErrorMessage(parsed, "Загрузка не удалась", res.status));
       }
 
       setPendingUploads([]);
       await refresh();
     } catch (e) {
-      setError(e?.message || "Upload error");
+      setError(e?.message || "Ошибка загрузки");
     } finally {
       setUploading(false);
     }
@@ -168,44 +171,53 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
   return (
     <div className="mt-10">
       <div className="mb-5">
-        <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
-          Images
+        <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.18em] text-teal">
+          Галерея
         </p>
-        <h2 className="font-display font-bold text-white text-lg">Project gallery</h2>
-        <p className="mt-2 text-sm text-[#9ca3af]">
-          Configure each image: caption, block size and object-fit.
+        <h2 className="font-display text-lg font-bold text-ink">Изображения проекта</h2>
+        <p className="mt-2 text-sm text-ink-muted">
+          Подпись, размер блока, object-fit и порядок сортировки.
         </p>
       </div>
 
-      {error ? <p className="text-sm text-red-400 mb-4">{error}</p> : null}
+      {error ? <p className="mb-4 text-sm text-clay">{error}</p> : null}
 
-      <div className="glass-strong rounded-3xl border border-white/[0.06] p-6 sm:p-8">
-        <div className="flex flex-col gap-6">
+      <div className="surface-card p-6 sm:p-8">
+        <div className="flex flex-col gap-8">
           <section>
-            <h3 className="text-sm font-display font-semibold text-white mb-3">Upload new images</h3>
+            <h3 className="mb-3 text-sm font-display font-semibold text-ink">Загрузить новые</h3>
 
             <input
               type="file"
               accept="image/*"
               multiple
               onChange={(e) => onChooseFiles(e.target.files)}
-              className="w-full text-sm text-[#9ca3af]"
+              className="w-full text-sm text-ink-muted"
               disabled={uploading}
             />
 
             {pendingUploads.length ? (
               <div className="mt-6 space-y-4">
                 {pendingUploads.map((p, idx) => (
-                  <div key={`${p.previewUrl}-${idx}`} className="rounded-2xl border border-white/[0.06] bg-[#0c0c12] p-4">
+                  <div
+                    key={`${p.previewUrl}-${idx}`}
+                    className="rounded-[16px] border border-[var(--border-soft)] bg-cream-50 p-4"
+                  >
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-                      <div className="relative h-24 w-full sm:h-28 sm:w-44 overflow-hidden rounded-xl border border-white/[0.06] bg-[var(--bg-card)]">
-                        <Image src={p.previewUrl} alt="Preview" fill className="object-cover" sizes="(max-width: 640px) 100vw, 176px" />
+                      <div className="relative h-24 w-full overflow-hidden rounded-xl border border-[var(--border-soft)] bg-cream-200 sm:h-28 sm:w-44">
+                        <Image
+                          src={p.previewUrl}
+                          alt="Превью"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 640px) 100vw, 176px"
+                        />
                       </div>
                       <div className="flex-1 space-y-3">
                         <div>
-                          <p className="text-xs text-[#71717a] mb-1">Caption</p>
+                          <p className={labelClass}>Подпись</p>
                           <input
-                            className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                            className={fieldClass}
                             value={p.caption}
                             onChange={(e) => {
                               const v = e.target.value;
@@ -218,9 +230,9 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
 
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Block size</p>
+                            <p className={labelClass}>Размер блока</p>
                             <select
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                               value={p.block_size}
                               onChange={(e) => {
                                 const v = e.target.value;
@@ -236,11 +248,10 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                               ))}
                             </select>
                           </div>
-
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Object fit</p>
+                            <p className={labelClass}>Object fit</p>
                             <select
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                               value={p.object_fit}
                               onChange={(e) => {
                                 const v = e.target.value;
@@ -260,9 +271,9 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
 
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Aspect ratio</p>
+                            <p className={labelClass}>Соотношение сторон</p>
                             <select
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                               value={p.aspect_ratio}
                               onChange={(e) => {
                                 const v = e.target.value;
@@ -278,12 +289,11 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                               ))}
                             </select>
                           </div>
-
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Sort order</p>
+                            <p className={labelClass}>Порядок</p>
                             <input
                               type="number"
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                               value={p.sort_order}
                               onChange={(e) => {
                                 const v = Number(e.target.value);
@@ -295,7 +305,7 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                           </div>
                         </div>
 
-                        <div className="pt-2 flex justify-end">
+                        <div className="flex justify-end pt-1">
                           <Button
                             type="button"
                             variant="secondary"
@@ -303,7 +313,7 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                               setPendingUploads((prev) => prev.filter((_, j) => j !== idx));
                             }}
                           >
-                            Remove from queue
+                            Убрать из очереди
                           </Button>
                         </div>
                       </div>
@@ -315,26 +325,29 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
 
             <div className="mt-4 flex justify-end">
               <Button type="button" disabled={!pendingUploads.length || uploading} onClick={uploadPending}>
-                {uploading ? "Uploading…" : "Upload"}
+                {uploading ? "Загрузка…" : "Загрузить"}
               </Button>
             </div>
           </section>
 
           <section>
-            <h3 className="text-sm font-display font-semibold text-white mb-3">Existing images</h3>
+            <h3 className="mb-3 text-sm font-display font-semibold text-ink">Уже загруженные</h3>
 
             {loading ? (
-              <p className="text-sm text-[#9ca3af]">Loading…</p>
+              <p className="text-sm text-ink-muted">Загрузка…</p>
             ) : sortedImages.length ? (
               <div className="space-y-4">
                 {sortedImages.map((img) => (
-                  <div key={img.id} className="rounded-2xl border border-white/[0.06] bg-[#0c0c12] p-4">
+                  <div
+                    key={img.id}
+                    className="rounded-[16px] border border-[var(--border-soft)] bg-cream-50 p-4"
+                  >
                     <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
-                      <div className="relative h-24 w-full lg:h-28 lg:w-44 overflow-hidden rounded-xl border border-white/[0.06] bg-[var(--bg-card)]">
+                      <div className="relative h-24 w-full overflow-hidden rounded-xl border border-[var(--border-soft)] bg-cream-200 lg:h-28 lg:w-44">
                         {img.image_url ? (
                           <Image
                             src={img.image_url}
-                            alt={img.caption || "Image"}
+                            alt={img.caption || "Изображение"}
                             fill
                             className="object-cover"
                             sizes="176px"
@@ -345,25 +358,29 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                       <div className="flex-1 space-y-3">
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Caption</p>
+                            <p className={labelClass}>Подпись</p>
                             <input
                               value={img.caption || ""}
                               onChange={(e) => {
                                 const v = e.target.value;
-                                setImages((prev) => prev.map((x) => (x.id === img.id ? { ...x, caption: v } : x)));
+                                setImages((prev) =>
+                                  prev.map((x) => (x.id === img.id ? { ...x, caption: v } : x))
+                                );
                               }}
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                             />
                           </div>
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Block size</p>
+                            <p className={labelClass}>Размер блока</p>
                             <select
                               value={img.block_size}
                               onChange={(e) => {
                                 const v = e.target.value;
-                                setImages((prev) => prev.map((x) => (x.id === img.id ? { ...x, block_size: v } : x)));
+                                setImages((prev) =>
+                                  prev.map((x) => (x.id === img.id ? { ...x, block_size: v } : x))
+                                );
                               }}
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                             >
                               {blockSizeOptions.map((o) => (
                                 <option key={o.value} value={o.value}>
@@ -376,14 +393,16 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
 
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Object fit</p>
+                            <p className={labelClass}>Object fit</p>
                             <select
                               value={img.object_fit}
                               onChange={(e) => {
                                 const v = e.target.value;
-                                setImages((prev) => prev.map((x) => (x.id === img.id ? { ...x, object_fit: v } : x)));
+                                setImages((prev) =>
+                                  prev.map((x) => (x.id === img.id ? { ...x, object_fit: v } : x))
+                                );
                               }}
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                             >
                               {objectFitOptions.map((o) => (
                                 <option key={o.value} value={o.value}>
@@ -393,14 +412,16 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                             </select>
                           </div>
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Aspect ratio</p>
+                            <p className={labelClass}>Соотношение сторон</p>
                             <select
                               value={img.aspect_ratio}
                               onChange={(e) => {
                                 const v = e.target.value;
-                                setImages((prev) => prev.map((x) => (x.id === img.id ? { ...x, aspect_ratio: v } : x)));
+                                setImages((prev) =>
+                                  prev.map((x) => (x.id === img.id ? { ...x, aspect_ratio: v } : x))
+                                );
                               }}
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                             >
                               {aspectRatioOptions.map((o) => (
                                 <option key={o.value} value={o.value}>
@@ -413,7 +434,7 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
 
                         <div className="grid gap-3 sm:grid-cols-2">
                           <div>
-                            <p className="text-xs text-[#71717a] mb-1">Sort order</p>
+                            <p className={labelClass}>Порядок</p>
                             <input
                               type="number"
                               value={img.sort_order ?? 0}
@@ -423,15 +444,15 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                                   prev.map((x) => (x.id === img.id ? { ...x, sort_order: v } : x))
                                 );
                               }}
-                              className="w-full rounded-xl bg-[var(--bg-card)] border border-white/10 px-4 py-2 text-white focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)] outline-none transition-colors"
+                              className={fieldClass}
                             />
                           </div>
                           <div className="flex items-end justify-end gap-3">
                             <Button type="button" variant="secondary" onClick={() => updateImage(img)}>
-                              Save
+                              Сохранить
                             </Button>
                             <Button type="button" variant="secondary" onClick={() => removeImage(img.id)}>
-                              Remove
+                              Удалить
                             </Button>
                           </div>
                         </div>
@@ -441,7 +462,7 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-[#9ca3af]">No images yet.</p>
+              <p className="text-sm text-ink-muted">Изображений пока нет.</p>
             )}
           </section>
         </div>
@@ -449,4 +470,3 @@ export default function ProjectImagesManager({ projectId, initialImages = [] }) 
     </div>
   );
 }
-

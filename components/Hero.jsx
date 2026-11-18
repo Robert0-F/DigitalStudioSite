@@ -1,145 +1,156 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import Button from "./ui/Button";
-import HeroMobileLuxury from "./hero/HeroMobileLuxury";
-import { fadeInUp, staggerContainer } from "@/lib/motion";
+import { useEffect, useState } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import Button from "@/components/ui/Button";
+import { BrowserFrame, PhoneFrame } from "@/components/ui/DeviceFrame";
+import { brand } from "@/lib/siteContent";
+import useSiteSettings from "@/lib/useSiteSettings";
+import { trackGoal } from "@/components/analytics/YandexMetrika";
 
-const HeroWebGL = dynamic(() => import("./hero/HeroWebGL"), {
-  ssr: false,
-  loading: () => (
-    <div className="absolute inset-0 bg-[#050508]" aria-hidden />
-  ),
-});
+function HeroDevices({
+  desktopUrl,
+  mobileUrl,
+  projects,
+  reduceMotion,
+  browserUrlLabel = "",
+  browserUrlHref = "",
+}) {
+  const primary = projects[0] || null;
+  const secondary = projects[1] || projects[0] || null;
+  const browserSrc = desktopUrl || primary?.hero_image_url || null;
+  const phoneSrc = mobileUrl || secondary?.hero_image_url || primary?.hero_image_url || null;
+  const browserLabel =
+    browserUrlLabel ||
+    (primary?.slug ? String(primary.slug) : "") ||
+    "portfolio";
+  const browserHref = browserUrlHref || primary?.live_url || "";
 
-function scrollTo(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-}
+  return (
+    <div className="group relative mx-auto w-full max-w-lg lg:max-w-none">
+      <div
+        className="pointer-events-none absolute -inset-6 -z-10 opacity-40"
+        style={{
+          backgroundImage: "url(/brand/paper-noise.svg)",
+          backgroundSize: "180px",
+        }}
+        aria-hidden
+      />
+      <motion.div
+        className="relative z-10"
+        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.45 }}
+      >
+        <BrowserFrame
+          src={browserSrc}
+          title={primary?.title || brand.shortName}
+          alt={desktopUrl ? "Обложка сайта (десктоп)" : primary?.title ? `Обложка: ${primary.title}` : "Пример работы"}
+          urlLabel={browserLabel}
+          urlHref={browserHref}
+          priority
+          sizes="(max-width: 1024px) 95vw, 720px"
+          quality={92}
+        />
+      </motion.div>
 
-function openLeadModal() {
-  window.dispatchEvent(new CustomEvent("lead-modal:open"));
+      <motion.div
+        className="absolute -bottom-5 -right-10 z-20 w-[34%] sm:-bottom-6 sm:-right-12 sm:w-[36%]"
+        initial={reduceMotion ? false : { opacity: 0, y: 28 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+      >
+        <PhoneFrame
+          src={phoneSrc}
+          title={secondary?.title || primary?.title || brand.shortName}
+          alt={mobileUrl ? "Обложка сайта (мобильная)" : secondary?.title ? `Мобильный вид: ${secondary.title}` : "Мобильный пример"}
+          priority
+          sizes="(max-width: 1024px) 40vw, 280px"
+          quality={92}
+        />
+      </motion.div>
+    </div>
+  );
 }
 
 export default function Hero() {
-  const [lg, setLg] = useState(false);
-  const [reducedMotion, setReducedMotion] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const { settings } = useSiteSettings();
+  const [projects, setProjects] = useState([]);
 
   useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1024px)");
-    const rm = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const u = () => {
-      setLg(mq.matches);
-      setReducedMotion(rm.matches);
-    };
-    u();
-    mq.addEventListener("change", u);
-    rm.addEventListener("change", u);
+    let alive = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/portfolio?home=1");
+        const json = await res.json().catch(() => null);
+        if (!alive) return;
+        const list = Array.isArray(json?.projects) ? json.projects : [];
+        const withCovers = list.filter((p) => p?.hero_image_url);
+        setProjects((withCovers.length ? withCovers : list).slice(0, 2));
+      } catch {
+        if (alive) setProjects([]);
+      }
+    })();
     return () => {
-      mq.removeEventListener("change", u);
-      rm.removeEventListener("change", u);
+      alive = false;
     };
   }, []);
 
+  const openLead = () => {
+    trackGoal("cta_hero");
+    window.dispatchEvent(new CustomEvent("lead-modal:open"));
+  };
+
+  const { hero, trustStrip } = settings;
+
   return (
-    <section
-      className="relative min-h-[100svh] overflow-hidden bg-[#050508]"
-      aria-labelledby="hero-heading"
-    >
-      <div className="absolute inset-0 z-0">
-        {lg ? (
-          <HeroWebGL
-            reducedMotion={reducedMotion}
-            className="absolute inset-0 h-full min-h-[520px] w-full lg:min-h-full"
-          />
-        ) : (
-          <HeroMobileLuxury />
-        )}
-      </div>
+    <>
+      <section className="paper-hero relative overflow-hidden pt-28 pb-12 sm:pt-32 sm:pb-16" aria-labelledby="hero-heading">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.35]"
+          style={{ backgroundImage: "url(/brand/grid-soft.svg)", backgroundSize: "48px" }}
+          aria-hidden
+        />
 
-      <div
-        className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b from-[#050508]/50 via-transparent to-[#050508] lg:bg-gradient-to-r lg:from-[#050508] lg:from-0% lg:via-[#050508]/88 lg:via-42% lg:to-transparent lg:to-100%"
-        aria-hidden
-      />
-
-      <div className="relative z-10 mx-auto flex min-h-[100svh] max-w-[1440px] flex-col px-5 pb-24 pt-28 sm:px-8 lg:flex-row lg:items-center lg:px-12 lg:pb-28 lg:pt-32 xl:px-16">
-        <div className="flex max-w-xl flex-1 flex-col justify-center lg:max-w-[540px] xl:max-w-xl">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="glass-luxury rounded-[1.75rem] border border-white/[0.07] px-7 py-9 sm:px-9 sm:py-11"
-          >
-            <motion.div
-              variants={fadeInUp}
-              className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#6366f1]/20 bg-[#6366f1]/5 px-3 py-1"
-            >
-              <span
-                className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#818cf8]"
-                aria-hidden
-              />
-              <span className="text-[11px] font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
-                Архитектура · Системы · Дизайн
-              </span>
-            </motion.div>
-
-            <motion.h1
-              id="hero-heading"
-              variants={fadeInUp}
-              className="heading-xl mb-6 font-display font-extrabold tracking-tight text-white"
-            >
-              Создаём{" "}
-              <span className="text-gradient">цифровые продукты</span>
-              <br />
-              для роста бизнеса
-            </motion.h1>
-
-            <motion.p
-              variants={fadeInUp}
-              className="mb-10 max-w-lg text-[17px] font-light leading-relaxed text-[#9ca3af] sm:text-lg"
-            >
-              Кастомные сайты и платформы, CRM, продуктовый UI/UX и брендинг —
-              под масштаб и процессы вашей компании, без универсальных пакетов.
-            </motion.p>
-
-            <motion.div
-              variants={fadeInUp}
-              className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4"
-            >
-              <Button onClick={openLeadModal}>Создать проект</Button>
-              <Button variant="secondary" onClick={() => scrollTo("work")}>
-                Смотреть портфолио
+        <div className="section-padding relative grid items-center gap-12 lg:grid-cols-2 lg:gap-14 xl:gap-16">
+          <div className="max-w-xl">
+            <p className="chip-accent mb-4">Агенты · Сайты · Системы · Трафик</p>
+            <h1 id="hero-heading" className="heading-xl text-ink">
+              {hero.title}
+            </h1>
+            <p className="mt-5 text-lg leading-relaxed text-ink-muted">{hero.subtitle}</p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Button onClick={openLead}>{hero.primaryCta}</Button>
+              <Button as="a" href="#work" variant="secondary">
+                {hero.secondaryCta}
               </Button>
-            </motion.div>
+            </div>
+          </div>
 
-            <motion.p
-              variants={fadeInUp}
-              className="mt-8 text-xs font-medium tracking-wide text-[#71717a]"
-            >
-              Индивидуальный объём и сроки · NDA · этапы и отчётность без сюрпризов
-            </motion.p>
-          </motion.div>
+          <div className="overflow-x-clip pb-10 pr-2 sm:pb-12 sm:pr-4 lg:overflow-visible lg:pb-4 lg:pr-0">
+            <HeroDevices
+              desktopUrl={settings.heroDesktopUrl}
+              mobileUrl={settings.heroMobileUrl}
+              projects={projects}
+              reduceMotion={reduceMotion}
+              browserUrlLabel={hero.browserLabel}
+              browserUrlHref={hero.browserUrl}
+            />
+          </div>
         </div>
+      </section>
 
-        <div className="pointer-events-none hidden flex-1 lg:block" aria-hidden />
+      <div className="section-padding relative -mt-2 pb-4 sm:pb-6">
+        <ul className="grid gap-4 rounded-[18px] border border-[var(--border-soft)] bg-[var(--bg-card)] p-5 shadow-soft sm:grid-cols-3 sm:p-6">
+          {trustStrip.map((item) => (
+            <li key={item.label} className="text-center sm:text-left">
+              <p className="font-display text-xl font-extrabold text-teal sm:text-2xl">{item.value}</p>
+              <p className="mt-1 text-sm text-ink-muted">{item.label}</p>
+            </li>
+          ))}
+        </ul>
       </div>
-
-      <motion.div
-        className="absolute bottom-8 left-1/2 z-10 hidden -translate-x-1/2 sm:block"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.1 }}
-        aria-hidden
-      >
-        <motion.div
-          animate={{ y: [0, 5, 0] }}
-          transition={{ duration: 2.2, repeat: Infinity }}
-          className="flex h-9 w-5 justify-center rounded-full border border-white/10 pt-1.5"
-        >
-          <div className="h-1 w-px rounded-full bg-[#818cf8]/80" />
-        </motion.div>
-      </motion.div>
-    </section>
+    </>
   );
 }

@@ -7,6 +7,7 @@ import AdminTabs from "@/components/admin/AdminTabs";
 import PortfolioProjectForm from "@/components/admin/PortfolioProjectForm";
 import Button from "@/components/ui/Button";
 import { adminErrorMessage, parseAdminJson } from "@/lib/adminApi";
+import { appendPortfolioFormData } from "@/lib/adminFormData";
 import ProjectImagesManager from "@/components/admin/ProjectImagesManager";
 
 export default function AdminPortfolioEditPage() {
@@ -25,13 +26,13 @@ export default function AdminPortfolioEditPage() {
     try {
       const res = await fetch("/api/admin/portfolio", { method: "GET", credentials: "include" });
       const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to load projects");
+      if (!res.ok) throw new Error(json?.error || "Не удалось загрузить проекты");
       const list = json?.projects ?? [];
       const found = list.find((p) => String(p.id) === String(id));
-      if (!found) throw new Error("Project not found");
+      if (!found) throw new Error("Проект не найден");
       setInitialProject(found);
     } catch (e) {
-      setError(e?.message || "Error");
+      setError(e?.message || "Ошибка");
     } finally {
       setLoading(false);
     }
@@ -47,32 +48,7 @@ export default function AdminPortfolioEditPage() {
     setError("");
     setIsSubmitting(true);
     try {
-      const fd = new FormData();
-      fd.append("title", values.title);
-
-      if (values.slug) fd.append("slug", values.slug);
-      if (values.subtitle) fd.append("subtitle", values.subtitle);
-      if (values.client_industry) fd.append("client_industry", values.client_industry);
-      if (values.project_type) fd.append("project_type", values.project_type);
-      if (values.live_url) fd.append("live_url", values.live_url);
-      fd.append("home_filter", values.home_filter || "");
-
-      fd.append("published", values.published ? "true" : "false");
-      for (const s of values.service_pages || []) {
-        fd.append("service_pages", s);
-      }
-
-      fd.append("overview", values.overview || "");
-      fd.append("problem", values.problem || "");
-      fd.append("solution", values.solution || "");
-      fd.append("process", values.process || "");
-      fd.append("results", values.results || "");
-      fd.append("technologies", values.technologies || "");
-      fd.append("final", values.final || "");
-
-      const heroFile = values.heroImageFile?.[0] ?? null;
-      if (heroFile) fd.append("heroImageFile", heroFile);
-
+      const fd = appendPortfolioFormData(new FormData(), values);
       const res = await fetch(`/api/admin/portfolio/${id}/`, {
         method: "PUT",
         body: fd,
@@ -80,42 +56,41 @@ export default function AdminPortfolioEditPage() {
       });
       const parsed = await parseAdminJson(res);
       if (!res.ok) {
-        throw new Error(adminErrorMessage(parsed, "Save failed", res.status));
+        throw new Error(adminErrorMessage(parsed, "Не удалось сохранить", res.status));
       }
-
       router.push("/admin/portfolio");
     } catch (e) {
-      setError(e?.message || "Error");
+      setError(e?.message || "Ошибка");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const submitLabel = useMemo(() => (initialProject ? "Save changes" : "Save"), [initialProject]);
+  const submitLabel = useMemo(() => (initialProject ? "Сохранить" : "Сохранить"), [initialProject]);
 
   return (
-    <main className="min-h-screen bg-[#050508] pt-28 pb-24">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-28 pb-24">
       <div className="section-padding">
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
-            <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
-              Admin
+            <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-teal">
+              Админ
             </p>
-            <h1 className="heading-md font-display font-bold text-white">Edit project</h1>
+            <h1 className="heading-md font-display font-bold text-ink">Редактирование</h1>
           </div>
           <Button type="button" variant="secondary" onClick={() => router.back()}>
-            Back
+            Назад
           </Button>
         </div>
 
         <AdminTabs />
 
-        {error ? <p className="text-sm text-red-400 mb-6">{error}</p> : null}
+        {error ? <p className="mb-6 text-sm text-clay">{error}</p> : null}
 
         {loading ? (
-          <p className="text-sm text-[#9ca3af]">Loading…</p>
+          <p className="text-sm text-ink-muted">Загрузка…</p>
         ) : initialProject ? (
-          <div className="glass-strong rounded-3xl border border-white/[0.06] p-6 sm:p-8">
+          <div className="rounded-3xl border border-[var(--border-soft)] bg-white p-6 shadow-soft sm:p-8">
             <PortfolioProjectForm
               initialValues={initialProject}
               submitLabel={submitLabel}
@@ -129,10 +104,9 @@ export default function AdminPortfolioEditPage() {
             />
           </div>
         ) : (
-          <p className="text-sm text-[#9ca3af]">Project not found.</p>
+          <p className="text-sm text-ink-muted">Проект не найден.</p>
         )}
       </div>
     </main>
   );
 }
-

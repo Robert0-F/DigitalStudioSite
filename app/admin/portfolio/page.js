@@ -7,10 +7,6 @@ import AdminTabs from "@/components/admin/AdminTabs";
 import Button from "@/components/ui/Button";
 import { adminErrorMessage, parseAdminJson } from "@/lib/adminApi";
 
-function formatPublished(v) {
-  return v ? "Yes" : "No";
-}
-
 export default function AdminPortfolioPage() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -23,10 +19,10 @@ export default function AdminPortfolioPage() {
     try {
       const res = await fetch("/api/admin/portfolio", { method: "GET", credentials: "include" });
       const json = await res.json().catch(() => null);
-      if (!res.ok) throw new Error(json?.error || "Failed to load projects");
+      if (!res.ok) throw new Error(json?.error || "Не удалось загрузить проекты");
       setProjects(json.projects ?? []);
     } catch (e) {
-      setError(e?.message || "Error");
+      setError(e?.message || "Ошибка");
     } finally {
       setLoading(false);
     }
@@ -37,14 +33,14 @@ export default function AdminPortfolioPage() {
   }, []);
 
   const remove = async (id) => {
-    const ok = window.confirm("Delete this project? This action cannot be undone.");
+    const ok = window.confirm("Удалить проект? Действие необратимо.");
     if (!ok) return;
 
     setDeletingId(id);
     setError("");
     try {
       const urls = [`/api/admin/portfolio/${id}/`, `/api/admin/portfolio/${id}`];
-      let lastError = "Deletion failed";
+      let lastError = "Удаление не удалось";
       for (const url of urls) {
         const res = await fetch(url, {
           method: "DELETE",
@@ -55,74 +51,74 @@ export default function AdminPortfolioPage() {
           return;
         }
         const parsed = await parseAdminJson(res);
-        lastError = adminErrorMessage(parsed, "Deletion failed", res.status);
+        lastError = adminErrorMessage(parsed, "Удаление не удалось", res.status);
         if (res.status === 404) continue;
         break;
       }
       throw new Error(lastError);
     } catch (e) {
-      setError(e?.message || "Deletion error");
+      setError(e?.message || "Ошибка удаления");
     } finally {
       setDeletingId(null);
     }
   };
 
   return (
-    <main className="min-h-screen bg-[#050508] pt-28 pb-24">
+    <main className="min-h-screen bg-[var(--bg-primary)] pt-28 pb-24">
       <div className="section-padding">
         <div className="mb-10">
-          <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
-            Admin
+          <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-teal">
+            Админ
           </p>
-          <h1 className="heading-md font-display font-bold text-white">Portfolio projects</h1>
-          <p className="mt-3 text-sm text-[#9ca3af]">
-            Create, edit, publish/unpublish and delete portfolio projects.
-          </p>
+          <h1 className="heading-md font-display font-bold text-ink">Кейсы портфолио</h1>
+          <p className="mt-3 text-sm text-ink-muted">Создание, редактирование, публикация и удаление.</p>
         </div>
 
         <AdminTabs />
 
         <div className="mb-8 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/admin/portfolio/new" className="inline-flex">
-            <Button type="button">Add new project</Button>
+            <Button type="button">Добавить проект</Button>
           </Link>
-          {error ? <p className="text-sm text-red-400">{error}</p> : null}
+          {error ? <p className="text-sm text-clay">{error}</p> : null}
         </div>
 
         {loading ? (
-          <p className="text-sm text-[#9ca3af]">Loading…</p>
+          <p className="text-sm text-ink-muted">Загрузка…</p>
         ) : (
-          <div className="glass-strong rounded-3xl border border-white/[0.06] p-6 sm:p-8 overflow-auto">
+          <div className="overflow-auto rounded-3xl border border-[var(--border-soft)] bg-white p-6 shadow-soft sm:p-8">
             <table className="w-full text-left">
               <thead>
-                <tr className="text-xs text-[#71717a] uppercase tracking-wider">
-                  <th className="pb-3 pr-3">Title</th>
-                  <th className="pb-3 pr-3">Project type</th>
-                  <th className="pb-3 pr-3">Published</th>
-                  <th className="pb-3 text-right">Actions</th>
+                <tr className="text-xs uppercase tracking-wider text-ink-muted">
+                  <th className="pb-3 pr-3">Название</th>
+                  <th className="pb-3 pr-3">Тип</th>
+                  <th className="pb-3 pr-3">Главная</th>
+                  <th className="pb-3 pr-3">Опубликован</th>
+                  <th className="pb-3 text-right">Действия</th>
                 </tr>
               </thead>
               <tbody>
                 {projects.length ? (
                   projects.map((p) => (
-                    <tr key={p.id} className="border-t border-white/[0.06]">
+                    <tr key={p.id} className="border-t border-[var(--border-soft)]">
                       <td className="py-4 pr-3">
                         <Link
                           href={`/portfolio/${p.slug}`}
-                          className="text-sm text-[#e5e7eb] hover:text-white underline underline-offset-4"
+                          className="text-sm text-ink underline underline-offset-4 hover:text-teal"
                           target="_blank"
                           rel="noopener noreferrer"
                         >
                           {p.title}
                         </Link>
                       </td>
-                      <td className="py-4 pr-3 text-sm text-[#9ca3af]">{p.project_type || "-"}</td>
-                      <td className="py-4 pr-3 text-sm text-[#9ca3af]">{formatPublished(p.published)}</td>
+                      <td className="py-4 pr-3 text-sm text-ink-muted">{p.project_type || "—"}</td>
+                      <td className="py-4 pr-3 text-sm text-ink-muted">{p.show_on_home ? "Да" : "Нет"}</td>
+                      <td className="py-4 pr-3 text-sm text-ink-muted">{p.published ? "Да" : "Нет"}</td>
                       <td className="py-4 text-right">
                         <div className="flex justify-end gap-3">
                           <Link href={`/admin/portfolio/${p.id}/edit`}>
                             <Button type="button" variant="secondary">
-                              Edit
+                              Изменить
                             </Button>
                           </Link>
                           <Button
@@ -131,7 +127,7 @@ export default function AdminPortfolioPage() {
                             disabled={deletingId === p.id}
                             onClick={() => remove(p.id)}
                           >
-                            {deletingId === p.id ? "Deleting…" : "Delete"}
+                            {deletingId === p.id ? "Удаление…" : "Удалить"}
                           </Button>
                         </div>
                       </td>
@@ -139,8 +135,8 @@ export default function AdminPortfolioPage() {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={4} className="py-10 text-sm text-[#9ca3af]">
-                      No projects yet. Add your first one.
+                    <td colSpan={5} className="py-10 text-sm text-ink-muted">
+                      Проектов пока нет. Добавьте первый.
                     </td>
                   </tr>
                 )}
@@ -152,4 +148,3 @@ export default function AdminPortfolioPage() {
     </main>
   );
 }
-

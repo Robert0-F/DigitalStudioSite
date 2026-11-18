@@ -1,123 +1,44 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
-import { useRef } from "react";
-import {
-  Search,
-  Map,
-  Palette,
-  Code2,
-  Rocket,
-} from "lucide-react";
-import { processSteps } from "@/lib/data";
-import { fadeInUp, staggerContainer } from "@/lib/motion";
-
-const icons = { Search, Map, Palette, Code2, Rocket };
+import { motion, useReducedMotion } from "framer-motion";
+import { workProcess } from "@/lib/siteContent";
 
 export default function Process() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-60px" });
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section
-      id="process"
-      ref={ref}
-      className="border-t border-white/[0.04] bg-[#050508] py-24 sm:py-32"
-      aria-labelledby="process-heading"
-    >
+    <section id="process" className="section-y bg-cream-100" aria-labelledby="process-heading">
       <div className="section-padding">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          className="mb-16 max-w-2xl text-center sm:mb-20 lg:text-left lg:max-w-none"
-        >
-          <motion.p
-            variants={fadeInUp}
-            className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]"
-          >
-            Прозрачный процесс
-          </motion.p>
-          <motion.h2
-            id="process-heading"
-            variants={fadeInUp}
-            className="heading-lg font-display font-bold text-white"
-          >
-            От постановки задачи до релиза — по понятным этапам
-          </motion.h2>
-        </motion.div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-teal">Как я работаю</p>
+        <h2 id="process-heading" className="heading-lg max-w-2xl text-ink">
+          От заявки до запуска — по шагам и срокам
+        </h2>
 
-        <div className="hidden lg:block">
-          <motion.ol
-            className="relative flex justify-between gap-4"
-            variants={staggerContainer}
-            initial="hidden"
-            animate={inView ? "visible" : "hidden"}
-          >
-            <div
-              className="absolute top-[28px] left-[8%] right-[8%] h-px bg-gradient-to-r from-transparent via-[var(--accent)]/40 to-transparent"
-              aria-hidden
-            />
-            {processSteps.map((step) => {
-              const Icon = icons[step.icon];
-              return (
-                <motion.li
-                  key={step.title}
-                  variants={fadeInUp}
-                  className="relative flex-1 flex flex-col items-center text-center px-2"
-                >
-                  <div className="relative z-10 mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#6366f1]/25 bg-[#6366f1]/[0.08] text-[#a5b4fc] shadow-glow-sm">
-                    <Icon className="h-6 w-6" strokeWidth={1.5} aria-hidden />
-                  </div>
-                  <h3 className="font-display font-bold text-white mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="max-w-[220px] text-sm leading-relaxed text-[#9ca3af]">
-                    {step.description}
-                  </p>
-                </motion.li>
-              );
-            })}
-          </motion.ol>
-        </div>
-
-        <motion.ol
-          className="lg:hidden space-y-0 pl-2"
-          variants={staggerContainer}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-        >
-          {processSteps.map((step, index) => {
-            const Icon = icons[step.icon];
-            const isLast = index === processSteps.length - 1;
-            return (
-              <motion.li
-                key={step.title}
-                variants={fadeInUp}
-                className="relative flex gap-5 pb-10 last:pb-0"
-              >
-                {!isLast && (
-                  <div
-                    className="absolute left-[27px] top-14 bottom-0 w-px bg-gradient-to-b from-[var(--accent)]/50 to-transparent"
-                    aria-hidden
-                  />
-                )}
-                <div className="relative z-10 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#6366f1]/25 bg-[#6366f1]/[0.08] text-[#a5b4fc]">
-                  <Icon className="h-6 w-6" strokeWidth={1.5} aria-hidden />
-                </div>
-                <div className="pt-1">
-                  <h3 className="font-display font-bold text-lg text-white mb-2">
-                    {step.title}
-                  </h3>
-                  <p className="text-[15px] leading-relaxed text-[#9ca3af]">
-                    {step.description}
-                  </p>
-                </div>
-              </motion.li>
-            );
-          })}
-        </motion.ol>
+        <ol className="relative mt-10 space-y-3">
+          <div
+            className="pointer-events-none absolute bottom-6 left-[1.35rem] top-6 hidden w-px bg-[var(--border-strong)] sm:block"
+            aria-hidden
+          />
+          {workProcess.map((step, idx) => (
+            <motion.li
+              key={step.title}
+              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-30px" }}
+              transition={{ duration: 0.3, delay: idx * 0.04 }}
+              className="relative grid gap-3 rounded-[18px] border border-[var(--border-soft)] bg-[var(--bg-card)] p-5 shadow-soft sm:grid-cols-[auto_1fr_auto] sm:items-start"
+            >
+              <span className="relative z-10 flex h-11 w-11 items-center justify-center rounded-[12px] bg-teal text-sm font-bold text-white">
+                {idx + 1}
+              </span>
+              <div>
+                <h3 className="font-display text-lg font-bold text-ink">{step.title}</h3>
+                <p className="mt-1 text-sm text-ink-muted">{step.description}</p>
+              </div>
+              <p className="text-sm font-semibold text-clay sm:pt-1 sm:text-right">{step.time}</p>
+            </motion.li>
+          ))}
+        </ol>
       </div>
     </section>
   );

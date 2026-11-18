@@ -7,7 +7,7 @@ from django.conf import settings
 def ensure_media_dirs() -> None:
     """Create upload folders if missing (needed on fresh server deploy)."""
     root = Path(settings.MEDIA_ROOT)
-    for sub in ("portfolio/hero", "portfolio/images"):
+    for sub in ("portfolio/hero", "portfolio/images", "site/hero", "site/logo"):
         (root / sub).mkdir(parents=True, exist_ok=True)
 
 

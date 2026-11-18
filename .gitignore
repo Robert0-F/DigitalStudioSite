@@ -17,7 +17,9 @@
 # misc
 .DS_Store
 *.pem
+.env
 .env*.local
+!.env.example
 
 # debug
 npm-debug.log*
@@ -30,3 +32,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+backend/.venv/
+
+# local / editor
+.cursor/
+tmp-logo-test.png
+*.log
+
+# Keep Django media + sqlite in git for this small studio site
+# (photos, logo, site settings). Do NOT commit secrets (.env*.local).

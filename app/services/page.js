@@ -1,86 +1,57 @@
-import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Globe, Workflow, LayoutTemplate, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { LayoutTemplate, Database, Bot, Megaphone, ArrowUpRight } from "lucide-react";
+import IconBox from "@/components/ui/IconBox";
+import { services } from "@/lib/siteContent";
 
 export const metadata = {
-  title: "Услуги — веб, CRM, UI/UX, брендинг | Tagirov Digital Studio",
-  description:
-    "Полный цикл: сайты и платформы, CRM, продуктовый дизайн и брендинг. Премиальная студия для бизнеса.",
-  openGraph: {
-    title: "Услуги | Tagirov Digital Studio",
-    description:
-      "Веб, CRM, UI/UX и бренд — детальные страницы по каждому направлению.",
-    type: "website",
-    locale: "ru_RU",
-  },
+  title: "Услуги",
+  description: "Tilda, Django, Telegram-боты и маркетинг в Яндексе.",
 };
 
-const list = [
-  {
-    href: "/services/web",
-    title: "Веб и платформы",
-    text: "Публичные и внутренние веб-продукты на современном стеке.",
-    Icon: Globe,
-  },
-  {
-    href: "/services/crm",
-    title: "CRM и автоматизация",
-    text: "Системы под вашу воронку и интеграции.",
-    Icon: Workflow,
-  },
-  {
-    href: "/services/ui-ux",
-    title: "UI/UX дизайн",
-    text: "Исследования, прототипы, дизайн-системы.",
-    Icon: LayoutTemplate,
-  },
-  {
-    href: "/services/brand",
-    title: "Бренд и айдентика",
-    text: "Стратегия, визуальный язык, гайдлайны.",
-    Icon: Sparkles,
-  },
-];
+const icons = {
+  tilda: LayoutTemplate,
+  django: Database,
+  telegram: Bot,
+  marketing: Megaphone,
+};
 
-export default function ServicesHubPage() {
+export default function ServicesIndexPage() {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#050508] pb-24 pt-32">
-        <div className="section-padding">
-          <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
-            Направления
+      <main id="main-content" className="bg-cream-100 pb-24 pt-28">
+        <section className="section-padding">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-teal">Услуги</p>
+          <h1 className="heading-xl text-ink">Четыре направления под заявки</h1>
+          <p className="mt-4 max-w-2xl text-ink-muted">
+            Выберите направление — или напишите задачу целиком, разберём вместе.
           </p>
-          <h1 className="mb-4 max-w-2xl font-display text-4xl font-extrabold text-white sm:text-5xl">
-            Услуги студии
-          </h1>
-          <p className="mb-14 max-w-xl text-lg text-[#9ca3af]">
-            Выберите направление — на странице описан подход, процесс и формат
-            сотрудничества.
-          </p>
-          <ul className="grid gap-6 sm:grid-cols-2">
-            {list.map(({ href, title, text, Icon }) => (
-              <li key={href}>
-                <Link
-                  href={href}
-                  className="group flex h-full flex-col rounded-2xl border border-white/[0.06] bg-[#0c0c12] p-8 transition-all hover:border-[#6366f1]/30 hover:shadow-glow-sm"
-                >
-                  <div className="mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-[#6366f1]/15 bg-[#6366f1]/10 text-[#a5b4fc]">
-                    <Icon className="h-7 w-7" strokeWidth={1.25} />
-                  </div>
-                  <h2 className="mb-2 font-display text-xl font-bold text-white group-hover:text-[#c7d2fe]">
-                    {title}
-                  </h2>
-                  <p className="mb-6 flex-1 text-sm text-[#9ca3af]">{text}</p>
-                  <span className="text-sm font-semibold text-[#818cf8]">
-                    Подробнее →
-                  </span>
-                </Link>
-              </li>
-            ))}
+          <ul className="mt-10 grid gap-4 sm:grid-cols-2">
+            {services.map((s) => {
+              const Icon = icons[s.id] || LayoutTemplate;
+              return (
+                <li key={s.id}>
+                  <Link
+                    href={s.href}
+                    className="group surface-card flex h-full flex-col p-6 transition hover:-translate-y-0.5 hover:shadow-lift"
+                  >
+                    <IconBox>
+                      <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                    </IconBox>
+                    <h2 className="heading-md mt-5 text-ink group-hover:text-teal">{s.title}</h2>
+                    <p className="mt-3 flex-1 text-sm text-ink-muted">{s.outcome}</p>
+                    <span className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-teal">
+                      Смотреть услугу
+                      <ArrowUpRight className="h-4 w-4" strokeWidth={1.75} aria-hidden />
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
-        </div>
+        </section>
       </main>
       <Footer />
     </>

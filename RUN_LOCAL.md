@@ -36,17 +36,20 @@ In `.env.local`:
 NEXT_PUBLIC_DJANGO_URL=http://localhost:8000
 ```
 
-### Admin password (Next + Django)
-
-In the **project root** `.env.local` (next to `package.json`):
+Скопируйте [`.env.example`](./.env.example) в `.env.local` в корне проекта. Минимум:
 
 ```env
+NEXT_PUBLIC_DJANGO_URL=http://localhost:8000
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ADMIN_PASSWORD=your-strong-password
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+NEXT_PUBLIC_YANDEX_METRIKA_ID=
 ```
 
-Django loads this file on startup (same vars as Next).
+Django подхватывает корневой `.env.local` через `python-dotenv`.
 
-Resend (optional; if missing, backend still accepts submissions):
+Resend (опционально; без него заявки всё равно сохраняются в БД + Telegram):
 
 ```env
 RESEND_API_KEY=...
@@ -60,8 +63,12 @@ In `backend/`:
 
 ```bash
 python manage.py migrate
+python manage.py createsuperuser
 python manage.py runserver 8000
 ```
+
+`createsuperuser` создаёт staff-пользователя для входа в `/admin` (логин + пароль).  
+`ADMIN_PASSWORD` остаётся как bootstrap/legacy: если пароль совпал, пользователь `admin` создаётся/обновляется автоматически.
 
 ## 5) Start Next.js
 
@@ -72,35 +79,21 @@ npm run dev
 ```
 
 Open:
-- `http://localhost:3000` (site)
-- `http://localhost:3000/admin` (admin panel)
+- `http://localhost:3000` — сайт
+- `http://localhost:3000/admin` — кабинет (кейсы + заявки)
 
-## Admin panel: how to set the password
+## Портфолио и админка
 
-1. Put `ADMIN_PASSWORD=...` in **project root** `.env.local` (not inside `backend/`). Django loads it via `python-dotenv`.
-2. Run `pip install -r requirements.txt` (includes `python-dotenv`).
-3. Restart Django (`python manage.py runserver 8000`).
-4. Open `/admin` and enter the password.
+- `/portfolio`, `/portfolio/<slug>` — публичные кейсы
+- `/admin/portfolio` — CRUD + галерея (WebP)
+- `/admin/requests` — заявки и статусы
+- Тексты витрины: `lib/siteContent.js` (`TODO_*`)
 
-**Or** set the env var in the shell before Django: `set ADMIN_PASSWORD=...` (Windows CMD) / `$env:ADMIN_PASSWORD="..."` (PowerShell) / `export ADMIN_PASSWORD=...` (macOS/Linux).
-
-## Портфолио (публично) и админка
-
-- Публичные страницы:
-  - `/portfolio` — список опубликованных кейсов
-  - `/portfolio/<slug>` — страница конкретного кейса
-- Админка:
-  - `/admin/portfolio` — CRUD проектов и управление изображениями (защищено тем же `ADMIN_PASSWORD`)
-
-Если вы обновляли схему моделей портфолио (или хотите снова заполнить демо-контент):
+Опционально демо-контент:
 
 ```bash
 cd backend
 python manage.py migrate
 python manage.py seed_portfolio
 ```
-
-После этого обновите вкладки:
-- `http://localhost:3000/portfolio`
-- `http://localhost:3000/admin/portfolio`
 

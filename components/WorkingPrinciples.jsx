@@ -1,93 +1,49 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { useInView } from "framer-motion";
-import { useRef } from "react";
-import {
-  FileCheck,
-  UserCircle,
-  Code2,
-  CalendarClock,
-  Shield,
-} from "lucide-react";
-import { workingPrinciples } from "@/lib/data";
-import { fadeInUp, staggerContainer } from "@/lib/motion";
+import { motion, useReducedMotion } from "framer-motion";
+import { Package, Inbox, LineChart } from "lucide-react";
+import { turnkeySteps } from "@/lib/siteContent";
 
-const icons = {
-  FileCheck,
-  UserCircle,
-  Code2,
-  CalendarClock,
-  Shield,
-};
+const stepIcons = [Package, Inbox, LineChart];
 
 export default function WorkingPrinciples() {
-  const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-50px" });
+  const reduceMotion = useReducedMotion();
 
   return (
-    <section
-      ref={ref}
-      className="border-t border-white/[0.04] bg-gradient-to-b from-[#050508] to-[#08080f] py-24 sm:py-32"
-      aria-labelledby="principles-heading"
-    >
+    <section id="turnkey" className="section-y surface-inverse" aria-labelledby="turnkey-heading">
       <div className="section-padding">
-        <motion.div
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-          variants={{
-            hidden: {},
-            visible: { transition: { staggerChildren: 0.08 } },
-          }}
-          className="mb-14 max-w-2xl lg:mb-16"
-        >
-          <motion.p
-            variants={fadeInUp}
-            className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]"
-          >
-            Как работаем
-          </motion.p>
-          <motion.h2
-            id="principles-heading"
-            variants={fadeInUp}
-            className="heading-lg font-display font-bold text-white"
-          >
-            Стандарты сотрудничества
-          </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="mt-4 text-[15px] leading-relaxed text-[#9ca3af]"
-          >
-            Без лозунгов — только то, что фиксируем в процессе и что влияет на
-            предсказуемость результата.
-          </motion.p>
-        </motion.div>
+        <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-[var(--accent-soft)]">Под ключ</p>
+        <h2 id="turnkey-heading" className="heading-lg max-w-2xl text-[var(--text-inverse)]">
+          Продукт, заявки и трафик — без «отдела на отдел»
+        </h2>
+        <p className="mt-4 max-w-2xl text-[var(--text-inverse)]/70">
+          Один контур: сделали → подключили сбор лидов → при необходимости запустили рекламу. Вам не нужно трижды объяснять задачу.
+        </p>
 
-        <motion.ul
-          className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6"
-          variants={staggerContainer}
-          initial="hidden"
-          animate={inView ? "visible" : "hidden"}
-        >
-          {workingPrinciples.map((item) => {
-            const Icon = icons[item.icon] ?? FileCheck;
+        <ol className="mt-12 grid gap-4 md:grid-cols-3">
+          {turnkeySteps.map((step, idx) => {
+            const Icon = stepIcons[idx] || Package;
             return (
-              <motion.li key={item.id} variants={fadeInUp}>
-                <article className="glass-luxury h-full rounded-2xl border border-white/[0.06] p-6 transition-all duration-400 hover:border-[#6366f1]/18 sm:p-7">
-                  <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-[#6366f1]/15 bg-[#6366f1]/[0.07] text-[#a5b4fc]">
-                    <Icon className="h-5 w-5" strokeWidth={1.35} aria-hidden />
-                  </div>
-                  <h3 className="mb-2 font-display text-lg font-bold text-white">
-                    {item.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-[#9ca3af]">
-                    {item.description}
-                  </p>
-                </article>
+              <motion.li
+                key={step.title}
+                initial={reduceMotion ? false : { opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.35, delay: idx * 0.06 }}
+                className="rounded-[18px] border border-white/10 bg-white/[0.04] p-6"
+              >
+                <span className="inline-flex h-11 w-11 items-center justify-center rounded-[12px] bg-white/10 text-[var(--accent-soft)]">
+                  <Icon className="h-5 w-5" strokeWidth={1.75} aria-hidden />
+                </span>
+                <p className="mt-5 text-xs font-semibold uppercase tracking-wider text-[var(--accent-soft)]">
+                  Шаг {idx + 1}
+                </p>
+                <h3 className="mt-2 font-display text-xl font-bold text-[var(--text-inverse)]">{step.title}</h3>
+                <p className="mt-2 text-sm text-[var(--text-inverse)]/65">{step.text}</p>
               </motion.li>
             );
           })}
-        </motion.ul>
+        </ol>
       </div>
     </section>
   );

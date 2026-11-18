@@ -15,75 +15,106 @@ async function fetchPublishedProjects() {
   }
 }
 
+export const metadata = {
+  title: "Портфолио",
+  description: "Кейсы: сайты на Tilda, Django-системы, Telegram-боты и маркетинг.",
+};
+
+function PlaceholderCover({ title }) {
+  return (
+    <div className="flex h-full w-full items-end bg-gradient-to-br from-teal-muted via-cream-200 to-clay-soft p-5">
+      <p className="font-display text-sm font-bold text-ink line-clamp-2">{title}</p>
+    </div>
+  );
+}
+
+function ProjectCard({ project, featured = false }) {
+  if (!project?.slug) return null;
+  return (
+    <article className="h-full">
+      <Link
+        href={`/portfolio/${project.slug}`}
+        className="group surface-card block h-full overflow-hidden transition hover:-translate-y-1 hover:shadow-lift"
+      >
+        <div
+          className={`relative overflow-hidden bg-cream-200 ${
+            featured ? "aspect-[16/11] lg:aspect-[16/12]" : "aspect-[16/10]"
+          }`}
+        >
+          {project.hero_image_url ? (
+            <Image
+              src={project.hero_image_url}
+              alt={project.title || "Проект"}
+              fill
+              className="motion-safe-zoom object-cover"
+              sizes={featured ? "(max-width: 1024px) 100vw, 66vw" : "(max-width: 640px) 100vw, 33vw"}
+              loading="lazy"
+            />
+          ) : (
+            <PlaceholderCover title={project.title} />
+          )}
+        </div>
+        <div className={`p-5 ${featured ? "sm:p-6" : ""}`}>
+          <p className="text-xs font-semibold uppercase tracking-wider text-teal">
+            {project.client_industry || "Проект"}
+          </p>
+          <h2
+            className={`mt-1 font-display font-bold text-ink group-hover:text-teal ${
+              featured ? "text-xl sm:text-2xl" : "text-lg"
+            }`}
+          >
+            {project.title}
+          </h2>
+          {project.overview_excerpt ? (
+            <p className={`mt-2 text-sm text-ink-muted ${featured ? "line-clamp-3" : "line-clamp-2"}`}>
+              {project.overview_excerpt}
+            </p>
+          ) : null}
+        </div>
+      </Link>
+    </article>
+  );
+}
+
 export default async function PortfolioPage() {
   const projects = await fetchPublishedProjects();
+  const featured = projects[0];
+  const rest = projects.slice(1);
 
   return (
     <>
       <Header />
-      <main className="bg-[#050508] pt-28 pb-24">
+      <main id="main-content" className="bg-cream-100 pt-28 pb-24">
         <section className="section-padding">
-          <div className="mb-12">
-            <p className="mb-3 text-xs font-display font-semibold uppercase tracking-[0.22em] text-[#a5b4fc]">
-              Портфолио
-            </p>
-            <h1 className="heading-xl font-display font-bold text-white">
-              Кейсы, которые дают бизнес-результат
-            </h1>
-            <p className="mt-4 max-w-2xl text-[var(--text-muted)] leading-relaxed">
-              Мы проектируем цифровые решения под задачи компаний: от продающих сайтов и CRM до продуктового UI/UX и айдентики.
-            </p>
-          </div>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-teal">Портфолио</p>
+          <h1 className="heading-xl max-w-3xl text-ink">Проекты с понятным результатом для бизнеса</h1>
+          <p className="mt-4 max-w-2xl text-ink-muted">
+            От лендингов до систем и ботов — живые кейсы из админки, без захардкоженного списка.
+          </p>
 
           {projects.length ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {projects.map((p) => {
-                if (!p?.slug) return null;
-                return (
-                  <article
-                    key={p.id}
-                    className="group overflow-hidden rounded-2xl border border-white/[0.06] bg-[#0c0c12] shadow-card transition-all duration-500 hover:-translate-y-1 hover:border-[#6366f1]/30"
-                  >
-                    <Link href={`/portfolio/${p.slug}`} className="block">
-                      <div className="relative aspect-[16/10] overflow-hidden bg-[var(--bg-card)]">
-                        {p.hero_image_url ? (
-                          <Image
-                            src={p.hero_image_url}
-                            alt={p.title || "Проект"}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div className="absolute inset-0 bg-white/[0.03]" />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-70 group-hover:opacity-90 transition-opacity" />
-                      </div>
-
-                      <div className="p-6">
-                        <p className="mb-2 text-xs font-display font-semibold uppercase tracking-wider text-[#a5b4fc]">
-                          {p.client_industry || "Индустрия"}
-                        </p>
-                        <h2 className="font-display text-lg font-bold text-white group-hover:text-[#c7d2fe] transition-colors">
-                          {p.title}
-                        </h2>
-                        {p.overview_excerpt ? (
-                          <p className="mt-2 text-sm text-[var(--text-muted)] line-clamp-3">
-                            {p.overview_excerpt}
-                          </p>
-                        ) : null}
-                      </div>
-                    </Link>
-                  </article>
-                );
-              })}
+            <div className="mt-10 space-y-4">
+              <div className="grid gap-4 lg:grid-cols-3">
+                <div className="lg:col-span-2">
+                  <ProjectCard project={featured} featured />
+                </div>
+                <div className="grid gap-4">
+                  {rest.slice(0, 2).map((p) => (
+                    <ProjectCard key={p.id} project={p} />
+                  ))}
+                </div>
+              </div>
+              {rest.length > 2 ? (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {rest.slice(2).map((p) => (
+                    <ProjectCard key={p.id} project={p} />
+                  ))}
+                </div>
+              ) : null}
             </div>
           ) : (
-            <div className="rounded-2xl border border-white/[0.06] bg-[#0c0c12] p-8">
-              <p className="text-[var(--text-muted)]">
-                Пока нет опубликованных кейсов. Добавьте проекты в админ-панели.
-              </p>
+            <div className="mt-10 rounded-[18px] border border-[var(--border-soft)] bg-[var(--bg-card)] p-8">
+              <p className="text-ink-muted">Пока нет опубликованных кейсов. Добавьте их в админ-панели.</p>
             </div>
           )}
         </section>
@@ -92,4 +123,3 @@ export default async function PortfolioPage() {
     </>
   );
 }
-
