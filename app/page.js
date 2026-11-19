@@ -1,16 +1,10 @@
-import HomeView from "@/components/home/HomeView";
-import {
-  fetchHomeHeroCovers,
-  fetchSiteSettingsServer,
-} from "@/lib/mergeSiteSettings";
+import { redirect } from "next/navigation";
 
-/** Cache HTML ~1 min — phone refresh stays fast; admin changes appear shortly after. */
-export const revalidate = 60;
-
-export default async function Home() {
-  const [settings, covers] = await Promise.all([
-    fetchSiteSettingsServer({ revalidate: 60 }),
-    fetchHomeHeroCovers(),
-  ]);
-  return <HomeView settings={settings} covers={covers} />;
+/**
+ * Next homepage HTML was ~180KB + dozens of scripts — phones hang.
+ * smoke.html / m.html (~few KB, no JS) load fine on the same phone.
+ * Serve the light static page until a slim Next shell is proven on mobile.
+ */
+export default function Home() {
+  redirect("/m.html");
 }

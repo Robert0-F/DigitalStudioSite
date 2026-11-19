@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import { Manrope, IBM_Plex_Sans } from "next/font/google";
 import "./globals.css";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
@@ -29,13 +27,6 @@ export const metadata = {
   },
   description:
     "Сайты на Tilda, веб-системы на Django, Telegram-боты и Яндекс.Директ под ключ для малого и среднего бизнеса. От идеи до заявок.",
-  keywords: [
-    "сайт на Tilda",
-    "Django CRM",
-    "Telegram бот для бизнеса",
-    "Яндекс Директ",
-    "веб-разработчик фрилансер",
-  ],
   openGraph: {
     title: "Tagirov Digital Studio",
     description:
@@ -52,24 +43,12 @@ export const metadata = {
   },
 };
 
-function readBuiltCss() {
-  try {
-    return fs.readFileSync(path.join(process.cwd(), "public", "assets", "site.css"), "utf8");
-  } catch {
-    return "";
-  }
-}
-
 export default function RootLayout({ children }) {
-  // Phone often never requests external /_next/static/css or /assets/site.css.
-  // One inlined copy (not experimental.inlineCss) keeps styles without a second request.
-  const builtCss = readBuiltCss();
-
   return (
     <html
       lang="ru"
       className={`${manrope.variable} ${ibmPlexSans.variable}`}
-      style={{ colorScheme: "light only", backgroundColor: "#f3f0ea" }}
+      style={{ colorScheme: "light", backgroundColor: "#f3f0ea" }}
       suppressHydrationWarning
     >
       <body
@@ -77,7 +56,6 @@ export default function RootLayout({ children }) {
         style={{ backgroundColor: "#f3f0ea", color: "#171411" }}
         suppressHydrationWarning
       >
-        {builtCss ? <style dangerouslySetInnerHTML={{ __html: builtCss }} /> : null}
         <a href="#main-content" className="skip-link">
           Перейти к содержимому
         </a>
