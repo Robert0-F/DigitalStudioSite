@@ -8,21 +8,19 @@ import IconBox from "@/components/ui/IconBox";
 import Button from "@/components/ui/Button";
 import { brand } from "@/lib/siteContent";
 import { mergeSiteSettings } from "@/lib/mergeSiteSettings";
+import { getDjangoServerUrl } from "@/lib/djangoServerUrl";
 
 const icons = {
   tilda: LayoutTemplate,
   django: Database,
   telegram: Bot,
   marketing: Megaphone,
+  agents: Database,
 };
-
-function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_DJANGO_URL || "http://localhost:8000";
-}
 
 async function fetchSiteSettingsServer() {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/site-settings`, { cache: "no-store" });
+    const res = await fetch(`${getDjangoServerUrl()}/api/site-settings`, { cache: "no-store" });
     if (!res.ok) return mergeSiteSettings(null);
     const json = await res.json().catch(() => null);
     return mergeSiteSettings(json?.settings || null);
@@ -33,7 +31,7 @@ async function fetchSiteSettingsServer() {
 
 async function fetchCases(serviceSlug) {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/portfolio`, { cache: "no-store" });
+    const res = await fetch(`${getDjangoServerUrl()}/api/portfolio`, { cache: "no-store" });
     if (!res.ok) return [];
     const json = await res.json().catch(() => null);
     const projects = json?.projects ?? [];

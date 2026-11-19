@@ -7,14 +7,13 @@ import DiscussProjectButton from "@/components/portfolio/DiscussProjectButton";
 import ImageGallery from "@/components/portfolio/ImageGallery";
 import CreativeWorkJsonLd from "@/components/seo/CreativeWorkJsonLd";
 import Button from "@/components/ui/Button";
+import { getDjangoServerUrl } from "@/lib/djangoServerUrl";
 
-function getBaseUrl() {
-  return process.env.NEXT_PUBLIC_DJANGO_URL || "http://localhost:8000";
-}
+export const dynamic = "force-dynamic";
 
 async function fetchPublishedPortfolio() {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/portfolio`, { cache: "no-store" });
+    const res = await fetch(`${getDjangoServerUrl()}/api/portfolio`, { cache: "no-store" });
     if (!res.ok) return [];
     const json = await res.json().catch(() => null);
     return json?.projects ?? [];
@@ -25,18 +24,13 @@ async function fetchPublishedPortfolio() {
 
 async function fetchPortfolioDetail(slug) {
   try {
-    const res = await fetch(`${getBaseUrl()}/api/portfolio/${slug}`, { cache: "no-store" });
+    const res = await fetch(`${getDjangoServerUrl()}/api/portfolio/${slug}`, { cache: "no-store" });
     if (!res.ok) return null;
     const json = await res.json().catch(() => null);
     return json?.project ?? null;
   } catch {
     return null;
   }
-}
-
-export async function generateStaticParams() {
-  const projects = await fetchPublishedPortfolio();
-  return (projects ?? []).filter((p) => p?.slug).map((p) => ({ slug: p.slug }));
 }
 
 export async function generateMetadata({ params }) {

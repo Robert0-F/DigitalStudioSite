@@ -8,7 +8,11 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 function djangoBase() {
-  return (process.env.NEXT_PUBLIC_DJANGO_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+  return (
+    process.env.DJANGO_INTERNAL_URL ||
+    process.env.NEXT_PUBLIC_DJANGO_URL ||
+    "http://127.0.0.1:8000"
+  ).replace(/\/$/, "");
 }
 
 async function proxyToDjango(request) {

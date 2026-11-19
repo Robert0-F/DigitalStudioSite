@@ -1,16 +1,13 @@
 import { services } from "@/lib/siteContent";
+import { getDjangoServerUrl } from "@/lib/djangoServerUrl";
 
 function siteUrl() {
   return (process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000").replace(/\/$/, "");
 }
 
-function djangoUrl() {
-  return process.env.NEXT_PUBLIC_DJANGO_URL || "http://localhost:8000";
-}
-
 async function fetchProjectSlugs() {
   try {
-    const res = await fetch(`${djangoUrl()}/api/portfolio`, { next: { revalidate: 3600 } });
+    const res = await fetch(`${getDjangoServerUrl()}/api/portfolio`, { next: { revalidate: 3600 } });
     if (!res.ok) return [];
     const json = await res.json().catch(() => null);
     return (json?.projects ?? []).map((p) => p.slug).filter(Boolean);

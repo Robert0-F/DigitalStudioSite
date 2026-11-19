@@ -2,11 +2,13 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Image from "next/image";
 import Link from "next/link";
+import { getDjangoServerUrl } from "@/lib/djangoServerUrl";
+
+export const dynamic = "force-dynamic";
 
 async function fetchPublishedProjects() {
-  const base = process.env.NEXT_PUBLIC_DJANGO_URL || "http://localhost:8000";
   try {
-    const res = await fetch(`${base}/api/portfolio`, { cache: "no-store" });
+    const res = await fetch(`${getDjangoServerUrl()}/api/portfolio`, { cache: "no-store" });
     if (!res.ok) return [];
     const json = await res.json().catch(() => null);
     return json?.projects ?? [];
