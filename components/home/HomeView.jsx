@@ -6,49 +6,55 @@ import ServerHeader from "@/components/home/ServerHeader";
  * Server-only homepage shell — no Framer / portals / client hooks.
  * Phone can render this from HTML+CSS even if Next hydration never runs.
  */
+/** JPEG always works on iPhone; WebP from /media sometimes shows a blue broken square. */
+function HeroPicture({ webpSrc, jpegSrc, alt, className, width, height }) {
+  return (
+    <picture>
+      {webpSrc ? <source srcSet={webpSrc} type="image/webp" /> : null}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={jpegSrc}
+        alt={alt}
+        className={className}
+        width={width}
+        height={height}
+        decoding="async"
+      />
+    </picture>
+  );
+}
+
 function HeroMedia({ desktopUrl, mobileUrl, covers }) {
-  const desktop =
-    desktopUrl || covers[0]?.hero_image_url || null;
-  const mobile =
-    mobileUrl || covers[1]?.hero_image_url || covers[0]?.hero_image_url || null;
-  if (!desktop && !mobile) return null;
+  const desktopWebp = desktopUrl || covers[0]?.hero_image_url || null;
+  const mobileWebp = mobileUrl || covers[1]?.hero_image_url || covers[0]?.hero_image_url || null;
 
   return (
     <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
-      {desktop ? (
-        <div className="overflow-hidden rounded-device border border-[var(--border-soft)] bg-[var(--bg-card)] shadow-card">
-          <div className="flex h-7 items-center gap-1.5 border-b border-[var(--border-soft)] bg-cream-200 px-2.5">
-            <span className="h-2 w-2 rounded-full bg-clay/70" aria-hidden />
-            <span className="h-2 w-2 rounded-full bg-[#d4a017]/80" aria-hidden />
-            <span className="h-2 w-2 rounded-full bg-teal/70" aria-hidden />
-          </div>
-          {/* Plain img — next/image optimizer was hanging ~6s on mobile */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={desktop}
-            alt={covers[0]?.title || "Пример сайта"}
-            className="aspect-[16/10] w-full object-cover object-top"
-            width={720}
-            height={450}
-            decoding="async"
-            fetchPriority="high"
-          />
+      <div className="overflow-hidden rounded-device border border-[var(--border-soft)] bg-[var(--bg-card)] shadow-card">
+        <div className="flex h-7 items-center gap-1.5 border-b border-[var(--border-soft)] bg-cream-200 px-2.5">
+          <span className="h-2 w-2 rounded-full bg-clay/70" aria-hidden />
+          <span className="h-2 w-2 rounded-full bg-[#d4a017]/80" aria-hidden />
+          <span className="h-2 w-2 rounded-full bg-teal/70" aria-hidden />
         </div>
-      ) : null}
-      {mobile ? (
-        <div className="absolute -bottom-5 -right-4 w-[34%] overflow-hidden rounded-[1.35rem] border-[3px] border-ink bg-[var(--bg-card)] shadow-lift sm:-right-8 sm:w-[36%]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={mobile}
-            alt={covers[1]?.title || covers[0]?.title || "Мобильный вид"}
-            className="aspect-[9/16] w-full object-cover object-top"
-            width={180}
-            height={320}
-            decoding="async"
-            loading="lazy"
-          />
-        </div>
-      ) : null}
+        <HeroPicture
+          webpSrc={desktopWebp}
+          jpegSrc="/hero/hero-desktop.jpg"
+          alt={covers[0]?.title || "Пример сайта"}
+          className="aspect-[16/10] w-full object-cover object-top"
+          width={720}
+          height={450}
+        />
+      </div>
+      <div className="absolute -bottom-5 -right-4 w-[34%] overflow-hidden rounded-[1.35rem] border-[3px] border-ink bg-[var(--bg-card)] shadow-lift sm:-right-8 sm:w-[36%]">
+        <HeroPicture
+          webpSrc={mobileWebp}
+          jpegSrc="/hero/hero-mobile.jpg"
+          alt={covers[1]?.title || covers[0]?.title || "Мобильный вид"}
+          className="aspect-[9/16] w-full object-cover object-top"
+          width={180}
+          height={320}
+        />
+      </div>
     </div>
   );
 }
