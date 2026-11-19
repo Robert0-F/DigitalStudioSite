@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { LayoutTemplate, Database, Bot, Megaphone, Sparkles, ArrowUpRight } from "lucide-react";
 import IconBox from "@/components/ui/IconBox";
+import { enterY, visibleY } from "@/lib/motionSafe";
 import useSiteSettings from "@/lib/useSiteSettings";
 
 const icons = {
@@ -35,9 +36,9 @@ export default function Services() {
             return (
               <motion.li
                 key={s.id}
-                initial={reduceMotion ? false : { opacity: 0, y: 14 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
+                initial={enterY(reduceMotion, 14)}
+                whileInView={visibleY}
+                viewport={{ once: true, margin: "-40px", amount: 0.15 }}
                 transition={{ duration: 0.35, delay: i * 0.05 }}
               >
                 <Link

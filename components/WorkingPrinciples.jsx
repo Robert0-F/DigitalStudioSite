@@ -3,6 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import { Package, Inbox, LineChart } from "lucide-react";
 import { turnkeySteps } from "@/lib/siteContent";
+import { enterY, visibleY } from "@/lib/motionSafe";
 
 const stepIcons = [Package, Inbox, LineChart];
 
@@ -26,9 +27,9 @@ export default function WorkingPrinciples() {
             return (
               <motion.li
                 key={step.title}
-                initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
+                initial={enterY(reduceMotion, 12)}
+                whileInView={visibleY}
+                viewport={{ once: true, margin: "-40px", amount: 0.15 }}
                 transition={{ duration: 0.35, delay: idx * 0.06 }}
                 className="rounded-[18px] border border-white/10 bg-white/[0.04] p-6"
               >

@@ -6,6 +6,7 @@ import { motion, useInView, useReducedMotion } from "framer-motion";
 import { CheckCircle2, Loader2, Mail, Phone, Send } from "lucide-react";
 import Button from "./ui/Button";
 import { brand } from "@/lib/siteContent";
+import { enterY, visibleY } from "@/lib/motionSafe";
 import { trackGoal } from "@/components/analytics/YandexMetrika";
 
 async function submitContact(data) {
@@ -64,8 +65,8 @@ export default function Contact() {
     <section id="contact" ref={ref} className="section-y scroll-mt-24 bg-cream-100" aria-labelledby="contact-heading">
       <div className="section-padding grid items-start gap-12 lg:grid-cols-2">
         <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
+          initial={enterY(reduceMotion, 12)}
+          animate={inView || reduceMotion ? visibleY : enterY(false, 12)}
           transition={{ duration: 0.4 }}
         >
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-teal">Заявка</p>

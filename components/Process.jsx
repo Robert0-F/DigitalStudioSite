@@ -2,6 +2,7 @@
 
 import { motion, useReducedMotion } from "framer-motion";
 import { workProcess } from "@/lib/siteContent";
+import { enterY, visibleY } from "@/lib/motionSafe";
 
 export default function Process() {
   const reduceMotion = useReducedMotion();
@@ -22,9 +23,9 @@ export default function Process() {
           {workProcess.map((step, idx) => (
             <motion.li
               key={step.title}
-              initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-30px" }}
+              initial={enterY(reduceMotion, 10)}
+              whileInView={visibleY}
+              viewport={{ once: true, margin: "-30px", amount: 0.15 }}
               transition={{ duration: 0.3, delay: idx * 0.04 }}
               className="relative grid gap-3 rounded-[18px] border border-[var(--border-soft)] bg-[var(--bg-card)] p-5 shadow-soft sm:grid-cols-[auto_1fr_auto] sm:items-start"
             >

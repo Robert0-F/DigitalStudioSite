@@ -3,6 +3,7 @@
 import { Check } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import Button from "@/components/ui/Button";
+import { enterY, visibleY } from "@/lib/motionSafe";
 import useSiteSettings from "@/lib/useSiteSettings";
 import { trackGoal } from "@/components/analytics/YandexMetrika";
 
@@ -31,9 +32,9 @@ export default function Pricing() {
           {pricingPackages.map((pkg, i) => (
             <motion.li
               key={pkg.id}
-              initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
+              initial={enterY(reduceMotion, 12)}
+              whileInView={visibleY}
+              viewport={{ once: true, margin: "-40px", amount: 0.15 }}
               transition={{ duration: 0.35, delay: i * 0.05 }}
               className={`flex flex-col rounded-[18px] border p-6 ${
                 pkg.featured

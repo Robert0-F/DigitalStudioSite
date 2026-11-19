@@ -5,6 +5,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import Button from "@/components/ui/Button";
 import { BrowserFrame, PhoneFrame } from "@/components/ui/DeviceFrame";
 import { brand } from "@/lib/siteContent";
+import { enterY, visibleY } from "@/lib/motionSafe";
 import useSiteSettings from "@/lib/useSiteSettings";
 import { trackGoal } from "@/components/analytics/YandexMetrika";
 
@@ -38,8 +39,8 @@ function HeroDevices({
       />
       <motion.div
         className="relative z-10"
-        initial={reduceMotion ? false : { opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={enterY(reduceMotion, 18)}
+        animate={visibleY}
         transition={{ duration: 0.45 }}
       >
         <BrowserFrame
@@ -56,8 +57,8 @@ function HeroDevices({
 
       <motion.div
         className="absolute -bottom-5 -right-10 z-20 w-[34%] sm:-bottom-6 sm:-right-12 sm:w-[36%]"
-        initial={reduceMotion ? false : { opacity: 0, y: 28 }}
-        animate={{ opacity: 1, y: 0 }}
+        initial={enterY(reduceMotion, 28)}
+        animate={visibleY}
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <PhoneFrame

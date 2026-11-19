@@ -7,7 +7,7 @@ import DiscussProjectButton from "@/components/portfolio/DiscussProjectButton";
 import IconBox from "@/components/ui/IconBox";
 import Button from "@/components/ui/Button";
 import { brand } from "@/lib/siteContent";
-import { mergeSiteSettings } from "@/lib/mergeSiteSettings";
+import { fetchSiteSettingsServer } from "@/lib/mergeSiteSettings";
 import { getDjangoServerUrl } from "@/lib/djangoServerUrl";
 
 const icons = {
@@ -17,17 +17,6 @@ const icons = {
   marketing: Megaphone,
   agents: Database,
 };
-
-async function fetchSiteSettingsServer() {
-  try {
-    const res = await fetch(`${getDjangoServerUrl()}/api/site-settings`, { cache: "no-store" });
-    if (!res.ok) return mergeSiteSettings(null);
-    const json = await res.json().catch(() => null);
-    return mergeSiteSettings(json?.settings || null);
-  } catch {
-    return mergeSiteSettings(null);
-  }
-}
 
 async function fetchCases(serviceSlug) {
   try {

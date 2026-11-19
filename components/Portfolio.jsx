@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { portfolioFilters } from "@/lib/siteContent";
+import { enterY, visibleY } from "@/lib/motionSafe";
 
 function matchesFilter(project, filterId) {
   if (filterId === "all") return true;
@@ -151,8 +152,8 @@ export default function Portfolio() {
               <motion.div
                 key={filter}
                 className="mt-10 space-y-4"
-                initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={enterY(reduceMotion, 10)}
+                animate={visibleY}
                 transition={{ duration: 0.3 }}
               >
                 <div className="grid gap-4 lg:grid-cols-3">

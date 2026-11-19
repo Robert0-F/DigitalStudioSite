@@ -33,21 +33,21 @@
 }
 
 html {
+  color-scheme: light only;
+  background-color: #f3f0ea;
   scroll-behavior: smooth;
+}
+
+body {
+  background-color: #f3f0ea;
+  color: #171411;
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
   }
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+  /* Do NOT nuke * transitions — it freezes Framer Motion at opacity:0 on iOS Safari */
 }
 
 .skip-link {

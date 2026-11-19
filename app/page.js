@@ -9,10 +9,16 @@ import Reviews from "@/components/Reviews";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import { SiteSettingsProvider } from "@/lib/SiteSettingsProvider";
+import { fetchSiteSettingsServer } from "@/lib/mergeSiteSettings";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+export default async function Home() {
+  const settings = await fetchSiteSettingsServer();
+
   return (
-    <>
+    <SiteSettingsProvider initialSettings={settings}>
       <Header />
       <main id="main-content">
         <Hero />
@@ -26,6 +32,6 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
-    </>
+    </SiteSettingsProvider>
   );
 }
