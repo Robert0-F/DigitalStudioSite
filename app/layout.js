@@ -45,6 +45,10 @@ export const metadata = {
   },
   robots: { index: true, follow: true },
   alternates: { canonical: siteUrl },
+  // iOS Safari/Chrome auto-link phones/emails → hydration wipe → blank page
+  other: {
+    "format-detection": "telephone=no, date=no, email=no, address=no",
+  },
 };
 
 /* Enough paint for Safari when /_next/static/css fails or is delayed */
@@ -88,12 +92,18 @@ export default function RootLayout({ children }) {
       lang="ru"
       className={`${manrope.variable} ${ibmPlexSans.variable}`}
       style={{ colorScheme: "light only", backgroundColor: "#f3f0ea" }}
+      suppressHydrationWarning
     >
+      <head>
+        {/* Stable CSS URL — mobile often skips /_next/static/css (copied on build) */}
+        <link rel="stylesheet" href="/assets/site.css" />
+      </head>
       <body
         className="font-body antialiased min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)]"
         style={{ backgroundColor: "#f3f0ea", color: "#171411" }}
+        suppressHydrationWarning
       >
-        {/* Inline critical paint: Safari Dark Mode paints a black canvas before/without external CSS */}
+        {/* Critical paint before /assets/site.css arrives */}
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
         <a href="#main-content" className="skip-link">
           Перейти к содержимому
