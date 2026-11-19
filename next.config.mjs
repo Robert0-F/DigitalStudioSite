@@ -19,6 +19,11 @@ function mediaRemotePatternsFromPublicUrl() {
 
 const nextConfig = {
   transpilePackages: ["three", "@react-three/fiber"],
+  // Safari/iOS sometimes never requests /_next/static/css/* (preload/cache bug
+  // or content blockers). Inlining puts Tailwind in the HTML so first paint works.
+  experimental: {
+    inlineCss: true,
+  },
   async redirects() {
     return [
       { source: "/services/web", destination: "/services/tilda", permanent: true },

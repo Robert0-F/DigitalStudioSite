@@ -49,7 +49,6 @@ function HeroDevices({
           alt={desktopUrl ? "Обложка сайта (десктоп)" : primary?.title ? `Обложка: ${primary.title}` : "Пример работы"}
           urlLabel={browserLabel}
           urlHref={browserHref}
-          priority
           sizes="(max-width: 1024px) 95vw, 720px"
           quality={92}
         />
@@ -65,7 +64,6 @@ function HeroDevices({
           src={phoneSrc}
           title={secondary?.title || primary?.title || brand.shortName}
           alt={mobileUrl ? "Обложка сайта (мобильная)" : secondary?.title ? `Мобильный вид: ${secondary.title}` : "Мобильный пример"}
-          priority
           sizes="(max-width: 1024px) 40vw, 280px"
           quality={92}
         />
