@@ -349,6 +349,9 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+        # Next sends Link: preload as="style" — Safari/iOS often then NEVER
+        # requests the real stylesheet (unstyled HTML). Hide that header.
+        proxy_hide_header Link;
     }
 }
 EOF
@@ -480,6 +483,7 @@ ss -lntp | grep -E ':80|:443|:3000|:8000'
 | картинки 404 | `ls /var/www/digitalstudio/backend/media/...` + `location /media/` в Nginx |
 | админка 500 при upload | права на `backend/media` у `www-data` |
 | старый дизайн после pull | не сделали `npm run build` или не restart Next |
+| на телефоне HTML без стилей, CSS нет в access.log | Safari Link-preload bug или Режим блокировки / блокировщик. В `location /` добавь `proxy_hide_header Link;`, `nginx -t && reload`. Проверь `/assets/site.css` |
 
 ---
 
