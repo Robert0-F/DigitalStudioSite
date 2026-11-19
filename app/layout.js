@@ -115,6 +115,8 @@ const criticalCss = `
     background: #0f5c4c;
     color: #fff;
   }
+  details > summary { list-style: none; }
+  details > summary::-webkit-details-marker { display: none; }
 `;
 
 export default function RootLayout({ children }) {
