@@ -15,10 +15,21 @@
     .wrap { width:min(1100px, 100%); margin:0 auto; padding:0 1.1rem; }
     header { position:sticky; top:0; z-index:10; background:rgba(255,251,247,.96); border-bottom:1px solid var(--line); }
     .nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 0; }
-    .brand { font-weight:800; letter-spacing:-.02em; font-size:1.05rem; }
-    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.7rem 1.2rem; border-radius:999px; font-weight:700; font-size:.9rem; }
+    .logo { height:40px; width:auto; background:transparent; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.7rem 1.2rem; border-radius:999px; font-weight:700; font-size:.9rem; border:0; cursor:pointer; font-family:inherit; }
     .btn-primary { background:var(--teal); color:#fff; }
     .btn-secondary { background:var(--card); border:1px solid var(--line); }
+    .btn:disabled { opacity:.65; cursor:wait; }
+    .form { display:grid; gap:.75rem; max-width:32rem; margin-top:1rem; }
+    .form label { display:grid; gap:.35rem; font-size:.85rem; font-weight:600; }
+    .form input, .form textarea {
+      width:100%; min-height:44px; padding:.7rem .9rem; border:1px solid var(--line);
+      border-radius:12px; background:var(--card); color:var(--ink); font:inherit;
+    }
+    .form textarea { min-height:110px; resize:vertical; }
+    .form-note { font-size:.9rem; margin:.4rem 0 0; }
+    .form-note.ok { color:var(--teal); font-weight:700; }
+    .form-note.err { color:#b42318; font-weight:700; }
     .hero { padding:2.75rem 0 1.5rem; }
     .grid { display:grid; gap:1.5rem; }
     @media (min-width:900px){ .hero-grid { grid-template-columns: 1.05fr .95fr; align-items:center; } }
@@ -65,8 +76,17 @@
 <body>
   <header>
     <div class="wrap nav">
-      <a class="brand" href="/">Tagirov</a>
-      <a class="btn btn-primary" href="https://t.me/robertprog">Написать</a>
+      <a href="/" aria-label="Tagirov Digital Studio">
+        <img
+          class="logo"
+          src="/media/site/logo/logo.svg"
+          width="160"
+          height="40"
+          alt="Tagirov"
+          decoding="async"
+        />
+      </a>
+      <a class="btn btn-primary" href="#contact">Заявка</a>
     </div>
   </header>
 
@@ -78,7 +98,7 @@
           <h1>Сайты, системы и агенты - под заявки</h1>
           <p class="lead">Делаю сайты, которые приводят клиентов, веб-системы под нагрузку и агентов под рутину. Подключу Директ и воронку, чтобы трафик не уходил в пустоту.</p>
           <div class="actions">
-            <a class="btn btn-primary" href="https://t.me/robertprog">Обсудить проект</a>
+            <a class="btn btn-primary" href="#contact">Обсудить проект</a>
             <a class="btn btn-secondary" href="#work">Смотреть работы</a>
           </div>
         </div>
@@ -216,11 +236,29 @@
 
     <section class="muted-bg" id="contact">
       <div class="wrap">
-        <p class="eyebrow">Связаться</p>
-        <h2>Напишите задачу</h2>
-        <p class="lead">Telegram надёжнее с телефона, чем тяжёлая форма.</p>
-        <div class="actions">
-          <a class="btn btn-primary" href="https://t.me/robertprog">Telegram @robertprog</a>
+        <p class="eyebrow">Заявка</p>
+        <h2>Расскажите задачу</h2>
+        <p class="lead">Имя, контакт и пара предложений — отвечу в рабочие часы. Или сразу напишите в Telegram.</p>
+
+        <form id="lead-form" class="form" novalidate>
+          <label>
+            Имя
+            <input name="name" type="text" autocomplete="name" required minlength="2" placeholder="Как к вам обращаться" />
+          </label>
+          <label>
+            Контакт
+            <input name="contact" type="text" autocomplete="tel" required placeholder="Телефон, Telegram или email" />
+          </label>
+          <label>
+            О проекте
+            <textarea name="description" rows="4" placeholder="Коротко: что нужно и какой результат"></textarea>
+          </label>
+          <button class="btn btn-primary" type="submit" id="lead-submit">Отправить заявку</button>
+          <p id="lead-status" class="form-note" role="status" aria-live="polite"></p>
+        </form>
+
+        <div class="actions" style="margin-top:1.25rem">
+          <a class="btn btn-secondary" href="https://t.me/robertprog">Telegram @robertprog</a>
           <a class="btn btn-secondary" href="tel:+79173990611">+7 (917) 399-06-11</a>
           <a class="btn btn-secondary" href="mailto:robrttagirov@gmail.com">Email</a>
         </div>
@@ -231,8 +269,59 @@
   <footer>
     <div class="wrap">
       <strong style="color:var(--ink)">Tagirov Digital Studio</strong>
-      <p>Лёгкая главная без JS. Полный сайт: <a href="/portfolio">портфолио</a>.</p>
+      <p>Лёгкая главная. Полный сайт: <a href="/portfolio">портфолио</a>.</p>
     </div>
   </footer>
+
+  <script>
+    (function () {
+      var form = document.getElementById("lead-form");
+      if (!form) return;
+      var btn = document.getElementById("lead-submit");
+      var statusEl = document.getElementById("lead-status");
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        var fd = new FormData(form);
+        var name = String(fd.get("name") || "").trim();
+        var contact = String(fd.get("contact") || "").trim();
+        var description = String(fd.get("description") || "").trim();
+
+        if (name.length < 2 || !contact) {
+          statusEl.className = "form-note err";
+          statusEl.textContent = "Укажите имя и контакт.";
+          return;
+        }
+
+        btn.disabled = true;
+        statusEl.className = "form-note";
+        statusEl.textContent = "Отправляю…";
+
+        fetch("/api/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: name,
+            contact: contact,
+            description: description,
+            projectType: "Контактная форма"
+          })
+        })
+          .then(function (res) {
+            if (!res.ok) throw new Error("fail");
+            statusEl.className = "form-note ok";
+            statusEl.textContent = "Заявка отправлена. Свяжусь в рабочие часы.";
+            form.reset();
+          })
+          .catch(function () {
+            statusEl.className = "form-note err";
+            statusEl.textContent = "Не отправилось. Напишите в Telegram @robertprog.";
+          })
+          .finally(function () {
+            btn.disabled = false;
+          });
+      });
+    })();
+  </script>
 </body>
 </html>
