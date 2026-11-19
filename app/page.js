@@ -1,13 +1,16 @@
 import HomeView from "@/components/home/HomeView";
-import { fetchSiteSettingsServer } from "@/lib/mergeSiteSettings";
+import {
+  fetchHomeHeroCovers,
+  fetchSiteSettingsServer,
+} from "@/lib/mergeSiteSettings";
 
-export const dynamic = "force-dynamic";
+/** Cache HTML ~1 min — phone refresh stays fast; admin changes appear shortly after. */
+export const revalidate = 60;
 
-/**
- * Server-only homepage: no Framer, portals, or client provider.
- * Mobile Safari can show content from HTML+CSS alone (smoke.html proved the network is fine).
- */
 export default async function Home() {
-  const settings = await fetchSiteSettingsServer();
-  return <HomeView settings={settings} />;
+  const [settings, covers] = await Promise.all([
+    fetchSiteSettingsServer({ revalidate: 60 }),
+    fetchHomeHeroCovers(),
+  ]);
+  return <HomeView settings={settings} covers={covers} />;
 }

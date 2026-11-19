@@ -6,7 +6,54 @@ import ServerHeader from "@/components/home/ServerHeader";
  * Server-only homepage shell — no Framer / portals / client hooks.
  * Phone can render this from HTML+CSS even if Next hydration never runs.
  */
-export default function HomeView({ settings }) {
+function HeroMedia({ desktopUrl, mobileUrl, covers }) {
+  const desktop =
+    desktopUrl || covers[0]?.hero_image_url || null;
+  const mobile =
+    mobileUrl || covers[1]?.hero_image_url || covers[0]?.hero_image_url || null;
+  if (!desktop && !mobile) return null;
+
+  return (
+    <div className="relative mx-auto w-full max-w-lg lg:max-w-none">
+      {desktop ? (
+        <div className="overflow-hidden rounded-device border border-[var(--border-soft)] bg-[var(--bg-card)] shadow-card">
+          <div className="flex h-7 items-center gap-1.5 border-b border-[var(--border-soft)] bg-cream-200 px-2.5">
+            <span className="h-2 w-2 rounded-full bg-clay/70" aria-hidden />
+            <span className="h-2 w-2 rounded-full bg-[#d4a017]/80" aria-hidden />
+            <span className="h-2 w-2 rounded-full bg-teal/70" aria-hidden />
+          </div>
+          {/* Plain img — next/image optimizer was hanging ~6s on mobile */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={desktop}
+            alt={covers[0]?.title || "Пример сайта"}
+            className="aspect-[16/10] w-full object-cover object-top"
+            width={720}
+            height={450}
+            decoding="async"
+            fetchPriority="high"
+          />
+        </div>
+      ) : null}
+      {mobile ? (
+        <div className="absolute -bottom-5 -right-4 w-[34%] overflow-hidden rounded-[1.35rem] border-[3px] border-ink bg-[var(--bg-card)] shadow-lift sm:-right-8 sm:w-[36%]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={mobile}
+            alt={covers[1]?.title || covers[0]?.title || "Мобильный вид"}
+            className="aspect-[9/16] w-full object-cover object-top"
+            width={180}
+            height={320}
+            decoding="async"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export default function HomeView({ settings, covers = [] }) {
   const { hero, trustStrip, services, servicesSection, pricingPackages, reviews, footerLegal, logoUrl } =
     settings;
 
@@ -16,25 +63,34 @@ export default function HomeView({ settings }) {
 
       <main id="main-content">
         <section className="paper-hero relative overflow-hidden pt-28 pb-12 sm:pt-32 sm:pb-16" aria-labelledby="hero-heading">
-          <div className="section-padding relative max-w-3xl">
-            <p className="chip-accent mb-4">Агенты · Сайты · Системы · Трафик</p>
-            <h1 id="hero-heading" className="heading-xl text-ink">
-              {hero.title}
-            </h1>
-            <p className="mt-5 text-lg leading-relaxed text-ink-muted">{hero.subtitle}</p>
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <a
-                href="#contact"
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-teal px-6 py-3 text-sm font-semibold text-white"
-              >
-                {hero.primaryCta}
-              </a>
-              <a
-                href="#work"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold text-ink"
-              >
-                {hero.secondaryCta}
-              </a>
+          <div className="section-padding relative grid items-center gap-12 lg:grid-cols-2 lg:gap-14">
+            <div className="max-w-xl">
+              <p className="chip-accent mb-4">Агенты · Сайты · Системы · Трафик</p>
+              <h1 id="hero-heading" className="heading-xl text-ink">
+                {hero.title}
+              </h1>
+              <p className="mt-5 text-lg leading-relaxed text-ink-muted">{hero.subtitle}</p>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+                <a
+                  href="#contact"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full bg-teal px-6 py-3 text-sm font-semibold text-white"
+                >
+                  {hero.primaryCta}
+                </a>
+                <a
+                  href="#work"
+                  className="inline-flex min-h-11 items-center justify-center rounded-full border border-[var(--border-strong)] bg-[var(--bg-card)] px-6 py-3 text-sm font-semibold text-ink"
+                >
+                  {hero.secondaryCta}
+                </a>
+              </div>
+            </div>
+            <div className="overflow-x-clip pb-10 pr-2 sm:pb-12 lg:pb-4 lg:pr-0">
+              <HeroMedia
+                desktopUrl={settings.heroDesktopUrl}
+                mobileUrl={settings.heroMobileUrl}
+                covers={covers}
+              />
             </div>
           </div>
         </section>
