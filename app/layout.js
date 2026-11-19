@@ -45,13 +45,11 @@ export const metadata = {
   },
   robots: { index: true, follow: true },
   alternates: { canonical: siteUrl },
-  // iOS Safari/Chrome auto-link phones/emails → hydration wipe → blank page
   other: {
     "format-detection": "telephone=no, date=no, email=no, address=no",
   },
 };
 
-/* Usable first paint if external CSS never arrives (mobile blockers / Safari Link bug) */
 const criticalCss = `
   :root {
     --bg-primary: #f3f0ea;
@@ -128,7 +126,6 @@ export default function RootLayout({ children }) {
       suppressHydrationWarning
     >
       <head>
-        {/* Stable CSS URL — mobile often skips /_next/static/css (copied on build) */}
         <link rel="stylesheet" href="/assets/site.css" />
       </head>
       <body
@@ -136,7 +133,6 @@ export default function RootLayout({ children }) {
         style={{ backgroundColor: "#f3f0ea", color: "#171411" }}
         suppressHydrationWarning
       >
-        {/* Critical paint before /assets/site.css arrives */}
         <style dangerouslySetInnerHTML={{ __html: criticalCss }} />
         <a href="#main-content" className="skip-link">
           Перейти к содержимому

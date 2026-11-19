@@ -9,6 +9,7 @@ import Reviews from "@/components/Reviews";
 import FAQ from "@/components/FAQ";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import ClientErrorTrap from "@/components/ClientErrorTrap";
 import { SiteSettingsProvider } from "@/lib/SiteSettingsProvider";
 import { fetchSiteSettingsServer } from "@/lib/mergeSiteSettings";
 
@@ -19,19 +20,21 @@ export default async function Home() {
 
   return (
     <SiteSettingsProvider initialSettings={settings}>
-      <Header />
-      <main id="main-content">
-        <Hero />
-        <Services />
-        <Portfolio />
-        <WorkingPrinciples />
-        <Process />
-        <Pricing />
-        <Reviews />
-        <FAQ />
-        <Contact />
-      </main>
-      <Footer />
+      <ClientErrorTrap>
+        <Header />
+        <main id="main-content">
+          <Hero />
+          <Services />
+          <Portfolio />
+          <WorkingPrinciples />
+          <Process />
+          <Pricing />
+          <Reviews />
+          <FAQ />
+          <Contact />
+        </main>
+        <Footer />
+      </ClientErrorTrap>
     </SiteSettingsProvider>
   );
 }
