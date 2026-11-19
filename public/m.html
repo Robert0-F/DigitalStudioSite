@@ -7,30 +7,35 @@
   <meta name="description" content="Сайты на Tilda, Django-системы, Telegram-боты и Яндекс.Директ — Tagirov Digital Studio" />
   <title>Tagirov Digital Studio</title>
   <style>
-    :root { --bg:#f3f0ea; --card:#fffbf7; --ink:#171411; --muted:#5c564e; --teal:#0f5c4c; --line:rgba(23,20,17,.12); }
+    :root { --bg:#f3f0ea; --card:#fffbf7; --ink:#171411; --muted:#5c564e; --teal:#0f5c4c; --clay:#b45309; --line:rgba(23,20,17,.12); }
     * { box-sizing: border-box; }
     body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background:var(--bg); color:var(--ink); line-height:1.5; }
     a { color:inherit; text-decoration:none; }
-    img { max-width:100%; height:auto; display:block; }
+    img { max-width:100%; height:auto; display:block; background:#ebe4da; }
     .wrap { width:min(1100px, 100%); margin:0 auto; padding:0 1.1rem; }
-    header { position:sticky; top:0; z-index:10; background:rgba(255,251,247,.95); border-bottom:1px solid var(--line); }
+    header { position:sticky; top:0; z-index:10; background:rgba(255,251,247,.96); border-bottom:1px solid var(--line); }
     .nav { display:flex; align-items:center; justify-content:space-between; gap:1rem; padding:.75rem 0; }
-    .logo { height:40px; width:auto; }
+    .brand { font-weight:800; letter-spacing:-.02em; font-size:1.05rem; }
     .btn { display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:.7rem 1.2rem; border-radius:999px; font-weight:700; font-size:.9rem; }
     .btn-primary { background:var(--teal); color:#fff; }
     .btn-secondary { background:var(--card); border:1px solid var(--line); }
-    .hero { padding:3.5rem 0 2rem; }
+    .hero { padding:2.75rem 0 1.5rem; }
     .grid { display:grid; gap:1.5rem; }
     @media (min-width:900px){ .hero-grid { grid-template-columns: 1.05fr .95fr; align-items:center; } }
     .chip { display:inline-block; padding:.2rem .7rem; border-radius:999px; background:#d7ebe4; color:var(--teal); font-size:.75rem; font-weight:700; }
     h1 { font-size:clamp(1.8rem, 5vw, 3rem); line-height:1.08; letter-spacing:-.03em; margin:.8rem 0; }
     h2 { font-size:clamp(1.4rem, 3vw, 2rem); line-height:1.15; margin:0 0 .6rem; }
+    h3 { margin:.2rem 0 .5rem; font-size:1.15rem; }
     .lead { color:var(--muted); font-size:1.05rem; margin:0 0 1.2rem; }
     .actions { display:flex; flex-wrap:wrap; gap:.6rem; }
-    .device { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; box-shadow:0 18px 40px -24px rgba(23,20,17,.35); }
+    .device { background:var(--card); border:1px solid var(--line); border-radius:14px; overflow:hidden; min-height:180px; }
     .chrome { height:28px; display:flex; align-items:center; gap:6px; padding:0 10px; background:#ebe4da; border-bottom:1px solid var(--line); }
     .dot { width:8px; height:8px; border-radius:50%; background:#bbb; }
-    .phone { width:34%; max-width:140px; margin:-28px 8px 0 auto; border:3px solid #171411; border-radius:18px; overflow:hidden; background:var(--card); position:relative; z-index:1; }
+    /* Phone mockup is decorative — never block first paint on small screens */
+    .phone { display:none; }
+    @media (min-width:900px){
+      .phone { display:block; width:34%; max-width:140px; margin:-28px 8px 0 auto; border:3px solid #171411; border-radius:18px; overflow:hidden; background:var(--card); position:relative; z-index:1; }
+    }
     .trust { display:grid; gap:1rem; margin:1rem 0 2rem; padding:1rem; background:var(--card); border:1px solid var(--line); border-radius:16px; }
     @media (min-width:640px){ .trust { grid-template-columns:repeat(3,1fr); } }
     .trust strong { display:block; font-size:1.5rem; color:var(--teal); }
@@ -40,19 +45,27 @@
     .cards { display:grid; gap:1rem; }
     @media (min-width:700px){ .cards { grid-template-columns:1fr 1fr; } }
     .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:1.1rem; }
-    .card h3 { margin:.2rem 0 .5rem; font-size:1.15rem; }
     .card p { margin:0; color:var(--muted); font-size:.92rem; }
-    .price { margin-top:.8rem; font-weight:700; color:#b45309; }
+    .price { margin-top:.8rem; font-weight:700; color:var(--clay); }
+    .case-img { aspect-ratio:16/10; object-fit:cover; width:100%; border-radius:12px; margin-bottom:.8rem; }
+    .steps { display:grid; gap:.8rem; }
+    @media (min-width:800px){ .steps-3 { grid-template-columns:repeat(3,1fr); } }
+    .step { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem; }
+    .step .n { font-size:.75rem; font-weight:700; color:var(--teal); text-transform:uppercase; letter-spacing:.06em; }
+    .process li { list-style:none; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem; margin:0 0 .6rem; }
+    .process { margin:0; padding:0; }
+    .process .time { color:var(--clay); font-weight:700; font-size:.9rem; }
     footer { padding:2rem 0 3rem; border-top:1px solid var(--line); color:var(--muted); font-size:.85rem; }
     details { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:1rem; }
     details + details { margin-top:.6rem; }
     summary { cursor:pointer; font-weight:700; }
+    .eyebrow { font-size:.75rem; font-weight:700; letter-spacing:.14em; text-transform:uppercase; color:var(--teal); margin:0 0 .5rem; }
   </style>
 </head>
 <body>
   <header>
     <div class="wrap nav">
-      <a href="/m.html"><img class="logo" src="/media/site/logo/logo.svg" width="160" height="40" alt="Tagirov" /></a>
+      <a class="brand" href="/">Tagirov</a>
       <a class="btn btn-primary" href="https://t.me/robertprog">Написать</a>
     </div>
   </header>
@@ -66,16 +79,30 @@
           <p class="lead">Делаю сайты, которые приводят клиентов, веб-системы под нагрузку и агентов под рутину. Подключу Директ и воронку, чтобы трафик не уходил в пустоту.</p>
           <div class="actions">
             <a class="btn btn-primary" href="https://t.me/robertprog">Обсудить проект</a>
-            <a class="btn btn-secondary" href="/portfolio">Смотреть работы</a>
+            <a class="btn btn-secondary" href="#work">Смотреть работы</a>
           </div>
         </div>
         <div>
           <div class="device">
             <div class="chrome"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div>
-            <img src="/hero/hero-desktop.jpg" width="720" height="450" alt="Пример сайта" />
+            <img
+              src="/hero/hero-desktop-sm.jpg"
+              width="720"
+              height="450"
+              alt="Пример сайта"
+              decoding="async"
+              fetchpriority="low"
+            />
           </div>
           <div class="phone">
-            <img src="/hero/hero-mobile.jpg" width="180" height="320" alt="Мобильный вид" />
+            <img
+              src="/hero/hero-mobile-sm.jpg"
+              width="180"
+              height="320"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
           </div>
         </div>
       </div>
@@ -90,6 +117,7 @@
 
     <section class="muted-bg" id="services">
       <div class="wrap">
+        <p class="eyebrow">Услуги</p>
         <h2>Что собираю под бизнес</h2>
         <p class="lead">Сайты, системы, агенты, Яндекс и боты. Делаю сам — без зоопарка подрядчиков.</p>
         <div class="cards">
@@ -102,20 +130,99 @@
       </div>
     </section>
 
-    <section id="contact">
+    <section id="work">
       <div class="wrap">
-        <h2>Связаться</h2>
-        <p class="lead">Напишите в Telegram или позвоните.</p>
+        <p class="eyebrow">Портфолио</p>
+        <h2>Смотри, что уже сделано</h2>
+        <p class="lead">Кейсы с главной — без тяжёлого JS. Картинки грузятся лениво.</p>
+        <div class="cards">
+          <a class="card" href="/portfolio/sistema-sbora-vtorichnogo-syrya">
+            <img class="case-img" src="/media/portfolio/hero/hero_EWzc4bY.webp" width="640" height="400" alt="" loading="lazy" decoding="async" />
+            <h3>Система сбора вторичного сырья</h3>
+            <p>Веб-система автоматизации сбора и учёта.</p>
+          </a>
+          <a class="card" href="/portfolio/banketnyy-zal-syuumbike">
+            <img class="case-img" src="/media/portfolio/hero/hero_IWoWyHq.webp" width="640" height="400" alt="" loading="lazy" decoding="async" />
+            <h3>Банкетный зал «Сююмбике»</h3>
+            <p>Сайт площадки под поток заявок на мероприятия.</p>
+          </a>
+          <a class="card" href="/portfolio/keytering-syuumbike">
+            <img class="case-img" src="/media/portfolio/hero/keytering-syuumbike-hero.png" width="640" height="400" alt="" loading="lazy" decoding="async" />
+            <h3>Кейтеринг «Сююмбике»</h3>
+            <p>Презентация выездного обслуживания.</p>
+          </a>
+        </div>
+        <div class="actions" style="margin-top:1.2rem">
+          <a class="btn btn-secondary" href="/portfolio">Все проекты →</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="muted-bg" id="turnkey">
+      <div class="wrap">
+        <p class="eyebrow">Под ключ</p>
+        <h2>Продукт, заявки и трафик</h2>
+        <div class="steps steps-3">
+          <div class="step"><div class="n">Шаг 1</div><h3>Продукт</h3><p>Сайт, система или бот под задачу бизнеса</p></div>
+          <div class="step"><div class="n">Шаг 2</div><h3>Заявки</h3><p>Формы, Telegram, аналитика — чтобы лиды не терялись</p></div>
+          <div class="step"><div class="n">Шаг 3</div><h3>Трафик</h3><p>При необходимости — Директ и карточка организации</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="process">
+      <div class="wrap">
+        <p class="eyebrow">Как я работаю</p>
+        <h2>От заявки до запуска</h2>
+        <ol class="process">
+          <li><h3>Заявка и созвон</h3><p class="lead" style="margin:0.3rem 0">Разбираем задачу и желаемый результат.</p><div class="time">1 день</div></li>
+          <li><h3>План и смета</h3><p class="lead" style="margin:0.3rem 0">Фиксируем объём, этапы и критерии приёмки.</p><div class="time">1–3 дня</div></li>
+          <li><h3>Сборка</h3><p class="lead" style="margin:0.3rem 0">Дизайн и реализация итерациями.</p><div class="time">от 1 недели</div></li>
+          <li><h3>Запуск</h3><p class="lead" style="margin:0.3rem 0">Публикация, проверки форм, доступы.</p><div class="time">1–2 дня</div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="muted-bg" id="pricing">
+      <div class="wrap">
+        <p class="eyebrow">Форматы</p>
+        <h2>Ориентиры по объёму</h2>
+        <div class="cards">
+          <div class="card"><h3>Старт</h3><div class="price">от 52000 ₽</div><p>Лендинг или простой многостраничник + формы.</p></div>
+          <div class="card"><h3>Рост</h3><div class="price">от 120000 ₽</div><p>Сайт или бот + канал заявок и воронка.</p></div>
+          <div class="card"><h3>Система</h3><div class="price">от 145000 ₽</div><p>Django-сервис, кабинет или автоматизация.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap">
+        <p class="eyebrow">FAQ</p>
+        <h2>Частые вопросы</h2>
+        <details open>
+          <summary>Сколько длится типичный проект?</summary>
+          <p class="lead" style="margin-top:.6rem">Лендинг на Tilda — часто 1–2 недели. Бот или небольшой сервис — от 2–4 недель.</p>
+        </details>
+        <details>
+          <summary>Как считаете цену?</summary>
+          <p class="lead" style="margin-top:.6rem">По объёму: страницы, интеграции, админка, реклама. Смета по этапам до старта.</p>
+        </details>
+        <details>
+          <summary>Можно ли начать с малого?</summary>
+          <p class="lead" style="margin-top:.6rem">Да: сначала лендинг или бот, потом система и реклама.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="muted-bg" id="contact">
+      <div class="wrap">
+        <p class="eyebrow">Связаться</p>
+        <h2>Напишите задачу</h2>
+        <p class="lead">Telegram надёжнее с телефона, чем тяжёлая форма.</p>
         <div class="actions">
           <a class="btn btn-primary" href="https://t.me/robertprog">Telegram @robertprog</a>
           <a class="btn btn-secondary" href="tel:+79173990611">+7 (917) 399-06-11</a>
           <a class="btn btn-secondary" href="mailto:robrttagirov@gmail.com">Email</a>
-        </div>
-        <div style="margin-top:1.5rem">
-          <details open>
-            <summary>Сколько длится типичный проект?</summary>
-            <p class="lead" style="margin-top:.6rem">Лендинг на Tilda — часто 1–2 недели. Бот или небольшой сервис — от 2–4 недель.</p>
-          </details>
         </div>
       </div>
     </section>
@@ -124,7 +231,7 @@
   <footer>
     <div class="wrap">
       <strong style="color:var(--ink)">Tagirov Digital Studio</strong>
-      <p>Лёгкая мобильная витрина. Полный сайт: <a href="/portfolio">портфолио</a>.</p>
+      <p>Лёгкая главная без JS. Полный сайт: <a href="/portfolio">портфолио</a>.</p>
     </div>
   </footer>
 </body>
